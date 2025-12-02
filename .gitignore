@@ -1,0 +1,30 @@
+# Ambiente virtual
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# VSCode
+.vscode/
+
+# Logs
+*.log
+
+# Arquivos temporários do sistema
+.DS_Store
+Thumbs.db
+
+# Node / front-end
+node_modules/
+
+# Banco de dados local (se não for pra versionar)
+*.db
+*.sqlite
+*.sqlite3
+
+# Arquivos gerados de build
+dist/
+build/
