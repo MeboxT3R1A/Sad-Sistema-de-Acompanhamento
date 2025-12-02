@@ -1,0 +1,25 @@
+front_sad_backup/
+├── Banco de dados diploma.sql
+├── app.py
+├── public/
+├── static/
+│   ├── css/
+│   │   └── styles.css
+│   ├── img/
+│   │   └── Logo_Senac.jpg
+│   └── js/
+│       ├── app.js
+│       ├── documentos.js
+│       ├── registro.js
+│       ├── relatorios.js
+│       └── scripts.js
+├── templates/
+│   ├── base.html
+│   ├── documentos.html
+│   ├── header.html
+│   ├── index.html
+│   ├── package.json
+│   ├── registros.html
+│   └── relatorios.html
+└── testes/
+    └── guardar.html
