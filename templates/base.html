@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <title>{% block title %}Sistema de Controle Documental{% endblock %}</title>
+
+     <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">  
+    
+</head>
+
+<body>
+
+    <!-- Cabeçalho padrão -->
+    {% include 'header.html' %}
+
+    <!-- Conteúdo específico de cada página -->
+    <main class="app">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- JS -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+</body>
+</html>

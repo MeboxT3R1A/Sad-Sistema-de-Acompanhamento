@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Controle de Documentos{% endblock %}
+
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro e Acompanhamento - SENAC</title>
+    <link rel="stylesheet" href="static/css/styles.css">
+    <script src="static/js/app.js" defer></script> 
+   <script src="static/js/registro.js" defer></script> 
+   <div class="app">
+       <!-- ========== NAVBAR ========== -->
+   
+        <main class="main-content">
+            <div class="container">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Registro e Acompanhamento</h2>
+                        <button class="btn btn-primary" id="newRegistroBtn">+ Novo Registro</button>
+                    </div>
+                    <div class="card-content">
+                        <div class="search-bar">
+                            <input 
+                                type="text" 
+                                id="searchInput" 
+                                placeholder="Buscar por aluno..." 
+                                class="search-input"
+                            >
+                        </div>
+
+                        <div class="table-wrapper">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Aluno</th>
+                                        <th>Data Matrícula</th>
+                                        <th>Livro Registro</th>
+                                        <th>Folha Registro</th>
+                                        <th>Data Diploma</th>
+                                        <th>Número Diploma</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="registroTable">
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">Carregando registros...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Registro Modal -->
+    <div class="modal" id="registroModal">
+        <div class="modal-content modal-md">
+            <div class="modal-header">
+                <h2>Registro e Acompanhamento</h2>
+                <button class="btn-close" id="closeModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="registroForm">
+                    <div class="form-group">
+                        <label for="studentSelect">Aluno *</label>
+                        <select id="studentSelect" required>
+                            <option value="">Selecione um aluno...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="dataMatricula">Data de Matrícula *</label>
+                        <input type="date" id="dataMatricula" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="livroRegistro">Livro Registro</label>
+                        <input type="text" id="livroRegistro">
+                    </div>
+                    <div class="form-group">
+                        <label for="folhaRegistro">Folha Registro</label>
+                        <input type="text" id="folhaRegistro">
+                    </div>
+                    <div class="form-group">
+                        <label for="dataEmissaoDiploma">Data Emissão Diploma</label>
+                        <input type="date" id="dataEmissaoDiploma">
+                    </div>
+                    <div class="form-group">
+                        <label for="numeroRegistroDiploma">Número Registro Diploma</label>
+                        <input type="text" id="numeroRegistroDiploma">
+                    </div>
+                    <div class="form-group">
+                        <label for="observacoes">Observações</label>
+                        <textarea id="observacoes" rows="3"></textarea>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline" id="cancelBtn">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script src="app.js"></script>
+    <script src="registro.js"></script>
+</body>
+</html>
+{% endblock %} 
