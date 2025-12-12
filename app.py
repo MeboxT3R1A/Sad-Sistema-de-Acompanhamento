@@ -32,9 +32,11 @@ def get_alunos():
     return jsonify(alunos)
 
 
-# Busca todos os alunos e junta com a tabela de documentos
 @app.route("/api/documentos", methods=['GET'])
 def listar_documentos():
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    
     sql = """
         SELECT 
             a.id, 
@@ -44,13 +46,15 @@ def listar_documentos():
             d.foto_entregue, 
             d.historico_entregue, 
             d.comprovante_entregue,
-            d.certidao_entregue,     -- Novo
-            d.certificado_entregue,  -- Novo
-            d.diploma_entregue       -- Novo
+            d.certidao_entregue,
+            d.certificado_entregue,
+            d.diploma_entregue
         FROM alunos a
         LEFT JOIN documentos_aluno d ON a.id = d.aluno_id
     """
-    dados = query(sql)
+    cursor.execute(sql)
+    dados = cursor.fetchall()
+    conn.close()
     
     lista_formatada = []
     for aluno in dados:
@@ -69,13 +73,16 @@ def listar_documentos():
         
     return jsonify(lista_formatada)
 
-# Recebe os dados do checkbox e salva no banco
 @app.route("/api/documentos/<int:aluno_id>", methods=['PUT'])
 def salvar_documentos(aluno_id):
     data = request.json 
     
-    check_sql = "SELECT id FROM documentos_aluno WHERE aluno_id = %s"
-    existe = query(check_sql, (aluno_id,))
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    # Verifica se existe
+    cursor.execute("SELECT id FROM documentos_aluno WHERE aluno_id = %s", (aluno_id,))
+    existe = cursor.fetchone()
     
     rg = data.get('rg', False)
     cpf = data.get('cpf', False)
@@ -95,7 +102,7 @@ def salvar_documentos(aluno_id):
                 data_verificacao=CURDATE()
             WHERE aluno_id=%s
         """
-        execute(sql, (rg, cpf, foto, historico, comprovante, certidao, certificado, diploma, aluno_id))
+        cursor.execute(sql, (rg, cpf, foto, historico, comprovante, certidao, certificado, diploma, aluno_id))
     else:
         sql = """
             INSERT INTO documentos_aluno 
@@ -105,9 +112,71 @@ def salvar_documentos(aluno_id):
              data_verificacao)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, CURDATE())
         """
-        execute(sql, (aluno_id, rg, cpf, foto, historico, comprovante, certidao, certificado, diploma))
-        
+        cursor.execute(sql, (aluno_id, rg, cpf, foto, historico, comprovante, certidao, certificado, diploma))
+    
+    conn.commit()
+    conn.close()
     return jsonify({"mensagem": "Documentos salvos com sucesso!"})
+
+
+@app.route("/api/relatorios")
+def get_relatorios_data():
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT status, COUNT(*) as total FROM alunos GROUP BY status")
+    stats_raw = cursor.fetchall()
+    
+    resumo = {'total': 0, 'ativo': 0, 'concluido': 0, 'evadido': 0}
+    for item in stats_raw:
+        s = item['status']
+        qtd = item['total']
+        if s in resumo:
+            resumo[s] = qtd
+        resumo['total'] += qtd
+
+    cursor.execute("SELECT curso, status, COUNT(*) as total FROM alunos GROUP BY curso, status")
+    cursos_raw = cursor.fetchall()
+    
+    cursos_dict = {}
+    for row in cursos_raw:
+        nome_curso = row['curso']
+        status = row['status']
+        qtd = row['total']
+        
+        if nome_curso not in cursos_dict:
+            cursos_dict[nome_curso] = {'total': 0, 'ativo': 0, 'concluido': 0, 'evadido': 0}
+            
+        cursos_dict[nome_curso]['total'] += qtd
+        if status in cursos_dict[nome_curso]:
+            cursos_dict[nome_curso][status] += qtd
+
+    cursor.execute("SELECT turma, status, COUNT(*) as total FROM alunos GROUP BY turma, status")
+    turmas_raw = cursor.fetchall()
+    
+    turmas_dict = {}
+    for row in turmas_raw:
+        nome_turma = row['turma']
+        if not nome_turma: continue # Pula se turma for vazia/nula
+        
+        status = row['status']
+        qtd = row['total']
+        
+        if nome_turma not in turmas_dict:
+            turmas_dict[nome_turma] = {'total': 0, 'ativo': 0, 'concluido': 0, 'evadido': 0}
+            
+        turmas_dict[nome_turma]['total'] += qtd
+        if status in turmas_dict[nome_turma]:
+            turmas_dict[nome_turma][status] += qtd
+
+    conn.close()
+
+    return jsonify({
+        "resumo": resumo,
+        "cursos": cursos_dict,
+        "turmas": turmas_dict
+    })
+
 
 if __name__ == '__main__':
     app.run(debug=True)

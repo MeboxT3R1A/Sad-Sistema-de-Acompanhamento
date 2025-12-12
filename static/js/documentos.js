@@ -57,7 +57,6 @@ if (document.getElementById('docsTable')) {
     document.getElementById('searchInput').addEventListener('input', renderDocs);
 
     window.editDocuments = function(id) {
-        // Converte para número se necessário para achar o ID correto
         currentStudent = allStudents.find(s => s.id == id);
         
         if (!currentStudent) return;
@@ -68,8 +67,6 @@ if (document.getElementById('docsTable')) {
             select.value = currentStudent.id;
         }
         
-        // Marca os checkboxes. 
-        // IMPORTANTE: O "value" do input no HTML deve ser igual à chave no JSON (certidao, diploma, etc)
         document.querySelectorAll('input[name="docs"]').forEach(cb => {
             cb.checked = currentStudent[cb.value] === true;
         });

@@ -1,75 +1,65 @@
 if (document.getElementById('totalStudents')) {
-    const storage = new StudentStorage();
-
+    
     document.addEventListener('DOMContentLoaded', () => {
-        renderStats();
-        renderCourseReport();
-        renderClassReport();
+        carregarRelatorios();
     });
 
-    function renderStats() {
-        const students = storage.getAll();
+    async function carregarRelatorios() {
+        try {
+            const response = await fetch('/api/relatorios');
+            const data = await response.json();
 
-        const total = students.length;
-        const active = students.filter(s => s.status === 'ativo').length;
-        const completed = students.filter(s => s.status === 'concluido').length;
-        const dropout = students.filter(s => s.status === 'evadido').length;
+            renderStats(data.resumo);
+            renderTable('courseTable', data.cursos);
+            renderTable('classTable', data.turmas);
 
-        document.getElementById('totalStudents').textContent = total;
-        document.getElementById('activeStudents').textContent = active;
-        document.getElementById('completedStudents').textContent = completed;
-        document.getElementById('dropoutStudents').textContent = dropout;
+        } catch (error) {
+            console.error("Erro ao carregar relatórios:", error);
+            document.getElementById('totalStudents').textContent = '-';
+        }
     }
 
-    function renderCourseReport() {
-        const students = storage.getAll();
-        const courses = {};
+    function renderStats(resumo) {
+        animateValue("totalStudents", 0, resumo.total, 1000);
+        animateValue("activeStudents", 0, resumo.ativo, 1000);
+        animateValue("completedStudents", 0, resumo.concluido, 1000);
+        animateValue("dropoutStudents", 0, resumo.evadido, 1000);
+    }
 
-        students.forEach(s => {
-            if (!courses[s.curso]) {
-                courses[s.curso] = { total: 0, active: 0, completed: 0, dropout: 0 };
-            }
-            courses[s.curso].total++;
-            if (s.status === 'ativo') courses[s.curso].active++;
-            if (s.status === 'concluido') courses[s.curso].completed++;
-            if (s.status === 'evadido') courses[s.curso].dropout++;
-        });
+    function renderTable(elementId, dataObj) {
+        const tbody = document.getElementById(elementId);
+        
+        if (Object.keys(dataObj).length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Sem dados registrados</td></tr>';
+            return;
+        }
 
-        const tbody = document.getElementById('courseTable');
-        tbody.innerHTML = Object.entries(courses).map(([course, data]) => `
+        tbody.innerHTML = Object.entries(dataObj).map(([nome, stats]) => `
             <tr>
-                <td><strong>${course}</strong></td>
-                <td>${data.total}</td>
-                <td>${data.active}</td>
-                <td>${data.completed}</td>
-                <td>${data.dropout}</td>
+                <td><strong>${nome}</strong></td>
+                <td>${stats.total}</td>
+                <td><span class="text-success">${stats.ativo}</span></td>
+                <td><span class="text-primary">${stats.concluido}</span></td>
+                <td><span class="text-danger">${stats.evadido}</span></td>
             </tr>
         `).join('');
     }
 
-    function renderClassReport() {
-        const students = storage.getAll();
-        const classes = {};
-
-        students.forEach(s => {
-            if (!classes[s.turma]) {
-                classes[s.turma] = { total: 0, active: 0, completed: 0, dropout: 0 };
+    function animateValue(id, start, end, duration) {
+        if (start === end) return;
+        const range = end - start;
+        let current = start;
+        const increment = end > start ? 1 : -1;
+        const stepTime = Math.abs(Math.floor(duration / range));
+        const obj = document.getElementById(id);
+        
+        const timer = setInterval(function() {
+            current += increment;
+            obj.textContent = current;
+            if (current == end) {
+                clearInterval(timer);
             }
-            classes[s.turma].total++;
-            if (s.status === 'ativo') classes[s.turma].active++;
-            if (s.status === 'concluido') classes[s.turma].completed++;
-            if (s.status === 'evadido') classes[s.turma].dropout++;
-        });
-
-        const tbody = document.getElementById('classTable');
-        tbody.innerHTML = Object.entries(classes).map(([cls, data]) => `
-            <tr>
-                <td><strong>${cls}</strong></td>
-                <td>${data.total}</td>
-                <td>${data.active}</td>
-                <td>${data.completed}</td>
-                <td>${data.dropout}</td>
-            </tr>
-        `).join('');
+        }, stepTime > 0 ? stepTime : 10);
+        if(stepTime <= 0) obj.textContent = end; 
     }
 }
