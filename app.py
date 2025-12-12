@@ -1,5 +1,5 @@
-from flask import Flask, render_template
-#
+from flask import Flask, render_template, jsonify
+from Bd import *
 app = Flask(__name__)
 
 
@@ -23,6 +23,14 @@ def registros():
 @app.route('/relatorios')
 def relatorios():
     return render_template('relatorios.html')
+
+@app.route("/api/alunos")
+def get_alunos():
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM alunos")
+    alunos = cursor.fetchall()
+    return jsonify(alunos)
 
 if __name__ == '__main__':
 	app.run(debug=True)

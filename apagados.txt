@@ -1,0 +1,65 @@
+// ========== STUDENT STORAGE ========== 
+class StudentStorage {
+    constructor() {
+        this.key = 'students_data';
+    }
+
+    getAll() {
+        if (typeof localStorage === 'undefined') return [];
+        const data = localStorage.getItem(this.key);
+        return data ? JSON.parse(data) : [];
+    }
+
+    save(student) {
+        const students = this.getAll();
+        const existingIndex = students.findIndex(s => s.id === student.id);
+
+        if (existingIndex >= 0) {
+            students[existingIndex] = student;
+        } else {
+            students.push(student);
+        }
+
+        localStorage.setItem(this.key, JSON.stringify(students));
+    }
+
+    delete(id) {
+        const students = this.getAll().filter(s => s.id !== id);
+        localStorage.setItem(this.key, JSON.stringify(students));
+    }
+
+    getById(id) {
+        return this.getAll().find(s => s.id === id);
+    }
+    addSample() {
+        const sample = {
+            id: this.generateId(),
+            nome: 'João Pedro Silva Santos',
+            rg: '12.345.678-9',
+            cpf: '123.456.789-00',
+            dataNascimento: '2000-05-15',
+            nomePai: 'Carlos Alberto Santos',
+            nomeMae: 'Maria Helena Silva Santos',
+            rgPai: '98.765.432-1',
+            cpfPai: '987.654.321-00',
+            rgMae: '11.222.333-4',
+            cpfMae: '111.222.333-44',
+            endereco: 'Rua das Flores, 123 - Centro - São Paulo/SP',
+            telefone: '(11) 98765-4321',
+            email: 'joao.santos@email.com',
+            curso: 'Técnico em Informática',
+            turma: 'TI-2024-A',
+            turno: 'manha',
+            anoIngresso: '2024',
+            anoFormatura: '2026',
+            status: 'ativo'
+        };
+        this.save(sample);
+    }
+
+    generateId() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    }
+}
+
+
