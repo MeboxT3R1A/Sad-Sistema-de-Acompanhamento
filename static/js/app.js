@@ -80,12 +80,19 @@ if (document.getElementById('studentsTable')) {
 
     // Criar aluno
     async function apiCreateStudent(student) {
-        await fetch('/api/alunos', {
+        const res = await fetch('/api/alunos', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(student)
         });
+        if (!res.ok) {
+            const err = await res.json().catch(()=>({erro: 'erro desconhecido'}));
+            throw new Error(err.erro || 'Falha ao criar aluno');
+        }
+        return await res.json(); // retorna o objeto criado com id e status
     }
+
+
 
     // Atualizar aluno
     async function apiUpdateStudent(id, student) {
