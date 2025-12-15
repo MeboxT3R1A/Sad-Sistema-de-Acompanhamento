@@ -105,7 +105,7 @@ def relatorios():
 @app.route("/api/alunos")
 def get_alunos():
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 15, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
     search = request.args.get('search', '').lower()
     
     base_query = "SELECT * FROM alunos"
@@ -297,7 +297,7 @@ def excluir_aluno(aluno_id):
 @app.route("/api/documentos")
 def listar_documentos():
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 15, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
     search = request.args.get('search', '').lower()
     
     sql = """
@@ -403,12 +403,12 @@ def salvar_documentos(aluno_id):
     return jsonify({"mensagem": "Documentos salvos com sucesso!"})
 
 
-
 @app.route("/api/relatorios")
 def get_relatorios_data():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
     table_type = request.args.get('table', '')  # Vazio para primeira carga
+    search = request.args.get('search', '').lower()  # Parâmetro de busca
     
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
@@ -425,18 +425,94 @@ def get_relatorios_data():
             resumo[s] = qtd
         resumo['total'] += qtd
 
-    # Se table_type estiver vazio (primeira carga), retornar dados paginados para AMBAS as tabelas
+    # Se table_type estiver vazio (primeira carga), retornar dados para AMBAS as tabelas
     if not table_type:
-        # ========== DADOS DE CURSOS (paginados) ==========
-        # Contar total de cursos únicos
-        cursor.execute("SELECT COUNT(DISTINCT curso) as total FROM alunos WHERE curso IS NOT NULL AND curso != ''")
-        total_cursos_result = cursor.fetchone()
-        total_cursos = total_cursos_result['total'] if total_cursos_result else 0
-        total_pages_cursos = math.ceil(total_cursos / per_page) if per_page > 0 else 1
-        
-        # Buscar cursos paginados (página 1 por padrão)
-        offset_cursos = (1 - 1) * per_page  # Sempre página 1 na primeira carga
-        sql_cursos = """
+        # Para primeira carga, se per_page for muito grande (ex: 1000), retornar tudo
+        if per_page >= 1000:
+            # ========== TODOS OS CURSOS (sem paginação) ==========
+            sql_cursos = """
+                SELECT 
+                    curso,
+                    COUNT(*) as total,
+                    SUM(CASE WHEN status = 'ativo' THEN 1 ELSE 0 END) as ativo,
+                    SUM(CASE WHEN status = 'concluido' THEN 1 ELSE 0 END) as concluido,
+                    SUM(CASE WHEN status = 'evadido' THEN 1 ELSE 0 END) as evadido
+                FROM alunos 
+                WHERE curso IS NOT NULL AND curso != ''
+                GROUP BY curso
+                ORDER BY curso
+            """
+            cursor.execute(sql_cursos)
+            cursos_raw = cursor.fetchall()
+            
+            cursos_dict = {}
+            for row in cursos_raw:
+                nome_curso = row['curso']
+                cursos_dict[nome_curso] = {
+                    'total': row['total'],
+                    'ativo': row['ativo'] or 0,
+                    'concluido': row['concluido'] or 0,
+                    'evadido': row['evadido'] or 0
+                }
+            
+            # ========== TODAS AS TURMAS (sem paginação) ==========
+            sql_turmas = """
+                SELECT 
+                    COALESCE(turma, 'Sem turma') as turma,
+                    COUNT(*) as total,
+                    SUM(CASE WHEN status = 'ativo' THEN 1 ELSE 0 END) as ativo,
+                    SUM(CASE WHEN status = 'concluido' THEN 1 ELSE 0 END) as concluido,
+                    SUM(CASE WHEN status = 'evadido' THEN 1 ELSE 0 END) as evadido
+                FROM alunos 
+                GROUP BY turma
+                ORDER BY 
+                    CASE WHEN turma IS NULL THEN 1 ELSE 0 END,
+                    turma
+            """
+            cursor.execute(sql_turmas)
+            turmas_raw = cursor.fetchall()
+            
+            turmas_dict = {}
+            for row in turmas_raw:
+                nome_turma = row['turma']
+                turmas_dict[nome_turma] = {
+                    'total': row['total'],
+                    'ativo': row['ativo'] or 0,
+                    'concluido': row['concluido'] or 0,
+                    'evadido': row['evadido'] or 0
+                }
+            
+            conn.close()
+            
+            return jsonify({
+                "resumo": resumo,
+                "cursos": cursos_dict,
+                "turmas": turmas_dict,
+                "pagination": {
+                    "page": 1,
+                    "per_page": per_page,
+                    "total_cursos": len(cursos_dict),
+                    "total_turmas": len(turmas_dict),
+                    "total_pages_cursos": 1,
+                    "total_pages_turmas": 1,
+                    "has_prev": False,
+                    "has_next": False
+                }
+            })
+        else:
+            # Se per_page for normal, usar paginação normal
+            return handle_normal_pagination(conn, cursor, resumo, table_type, page, per_page, search)
+    else:
+        # Se table_type especificado, usar paginação normal
+        return handle_normal_pagination(conn, cursor, resumo, table_type, page, per_page, search)
+
+def handle_normal_pagination(conn, cursor, resumo, table_type, page, per_page, search):
+    """Função auxiliar para lidar com paginação normal"""
+    
+    # Dados paginados para cursos (quando table_type='cursos')
+    if table_type == 'cursos':
+        # Query base para cursos
+        sql_base = """
             SELECT 
                 curso,
                 COUNT(*) as total,
@@ -445,81 +521,22 @@ def get_relatorios_data():
                 SUM(CASE WHEN status = 'evadido' THEN 1 ELSE 0 END) as evadido
             FROM alunos 
             WHERE curso IS NOT NULL AND curso != ''
-            GROUP BY curso
-            ORDER BY curso
-            LIMIT %s OFFSET %s
         """
-        cursor.execute(sql_cursos, (per_page, offset_cursos))
-        cursos_raw = cursor.fetchall()
         
-        cursos_dict = {}
-        for row in cursos_raw:
-            nome_curso = row['curso']
-            cursos_dict[nome_curso] = {
-                'total': row['total'],
-                'ativo': row['ativo'] or 0,
-                'concluido': row['concluido'] or 0,
-                'evadido': row['evadido'] or 0
-            }
+        # Adicionar filtro de busca se existir
+        params = []
+        if search:
+            sql_base += " AND LOWER(curso) LIKE %s"
+            params.append(f"%{search}%")
         
-        # ========== DADOS DE TURMAS (paginados) ==========
-        # Contar total de turmas únicas
-        cursor.execute("SELECT COUNT(DISTINCT turma) as total FROM alunos")
-        total_turmas_result = cursor.fetchone()
-        total_turmas = total_turmas_result['total'] if total_turmas_result else 0
-        total_pages_turmas = math.ceil(total_turmas / per_page) if per_page > 0 else 1
+        sql_base += " GROUP BY curso ORDER BY curso"
         
-        # Buscar turmas paginadas (página 1 por padrão)
-        offset_turmas = (1 - 1) * per_page  # Sempre página 1 na primeira carga
-        sql_turmas = """
-            SELECT 
-                COALESCE(turma, 'Sem turma') as turma,
-                COUNT(*) as total,
-                SUM(CASE WHEN status = 'ativo' THEN 1 ELSE 0 END) as ativo,
-                SUM(CASE WHEN status = 'concluido' THEN 1 ELSE 0 END) as concluido,
-                SUM(CASE WHEN status = 'evadido' THEN 1 ELSE 0 END) as evadido
-            FROM alunos 
-            GROUP BY turma
-            ORDER BY 
-                CASE WHEN turma IS NULL THEN 1 ELSE 0 END,
-                turma
-            LIMIT %s OFFSET %s
-        """
-        cursor.execute(sql_turmas, (per_page, offset_turmas))
-        turmas_raw = cursor.fetchall()
+        # Contar total
+        count_sql = "SELECT COUNT(DISTINCT curso) as total FROM alunos WHERE curso IS NOT NULL AND curso != ''"
+        if search:
+            count_sql += " AND LOWER(curso) LIKE %s"
         
-        turmas_dict = {}
-        for row in turmas_raw:
-            nome_turma = row['turma']
-            turmas_dict[nome_turma] = {
-                'total': row['total'],
-                'ativo': row['ativo'] or 0,
-                'concluido': row['concluido'] or 0,
-                'evadido': row['evadido'] or 0
-            }
-        
-        conn.close()
-        
-        return jsonify({
-            "resumo": resumo,
-            "cursos": cursos_dict,
-            "turmas": turmas_dict,
-            "pagination": {
-                "page": 1,
-                "per_page": per_page,
-                "total_cursos": total_cursos,
-                "total_turmas": total_turmas,
-                "total_pages_cursos": total_pages_cursos,
-                "total_pages_turmas": total_pages_turmas,
-                "has_prev": False,
-                "has_next": total_pages_cursos > 1 or total_pages_turmas > 1
-            }
-        })
-    
-    # Dados paginados para cursos (quando table_type='cursos')
-    elif table_type == 'cursos':
-        # Contar total de cursos únicos
-        cursor.execute("SELECT COUNT(DISTINCT curso) as total FROM alunos WHERE curso IS NOT NULL AND curso != ''")
+        cursor.execute(count_sql, tuple(params))
         total_result = cursor.fetchone()
         total_items = total_result['total'] if total_result else 0
         total_pages = math.ceil(total_items / per_page) if per_page > 0 else 1
@@ -528,20 +545,10 @@ def get_relatorios_data():
         offset = (page - 1) * per_page
         
         # Buscar cursos com agregação paginada
-        sql = """
-            SELECT 
-                curso,
-                COUNT(*) as total,
-                SUM(CASE WHEN status = 'ativo' THEN 1 ELSE 0 END) as ativo,
-                SUM(CASE WHEN status = 'concluido' THEN 1 ELSE 0 END) as concluido,
-                SUM(CASE WHEN status = 'evadido' THEN 1 ELSE 0 END) as evadido
-            FROM alunos 
-            WHERE curso IS NOT NULL AND curso != ''
-            GROUP BY curso
-            ORDER BY curso
-            LIMIT %s OFFSET %s
-        """
-        cursor.execute(sql, (per_page, offset))
+        sql = sql_base + " LIMIT %s OFFSET %s"
+        params.extend([per_page, offset])
+        
+        cursor.execute(sql, tuple(params))
         cursos_raw = cursor.fetchall()
         
         cursos_dict = {}
@@ -558,8 +565,31 @@ def get_relatorios_data():
         
     # Dados paginados para turmas (quando table_type='turmas')
     elif table_type == 'turmas':
-        # Contar total de turmas únicas
-        cursor.execute("SELECT COUNT(DISTINCT turma) as total FROM alunos")
+        # Query base para turmas
+        sql_base = """
+            SELECT 
+                COALESCE(turma, 'Sem turma') as turma,
+                COUNT(*) as total,
+                SUM(CASE WHEN status = 'ativo' THEN 1 ELSE 0 END) as ativo,
+                SUM(CASE WHEN status = 'concluido' THEN 1 ELSE 0 END) as concluido,
+                SUM(CASE WHEN status = 'evadido' THEN 1 ELSE 0 END) as evadido
+            FROM alunos 
+        """
+        
+        # Adicionar filtro de busca se existir
+        params = []
+        if search:
+            sql_base += " WHERE LOWER(turma) LIKE %s"
+            params.append(f"%{search}%")
+        
+        sql_base += " GROUP BY turma ORDER BY CASE WHEN turma IS NULL THEN 1 ELSE 0 END, turma"
+        
+        # Contar total
+        count_sql = "SELECT COUNT(DISTINCT turma) as total FROM alunos"
+        if search:
+            count_sql += " WHERE LOWER(turma) LIKE %s"
+        
+        cursor.execute(count_sql, tuple(params))
         total_result = cursor.fetchone()
         total_items = total_result['total'] if total_result else 0
         total_pages = math.ceil(total_items / per_page) if per_page > 0 else 1
@@ -568,21 +598,10 @@ def get_relatorios_data():
         offset = (page - 1) * per_page
         
         # Buscar turmas com agregação paginada
-        sql = """
-            SELECT 
-                COALESCE(turma, 'Sem turma') as turma,
-                COUNT(*) as total,
-                SUM(CASE WHEN status = 'ativo' THEN 1 ELSE 0 END) as ativo,
-                SUM(CASE WHEN status = 'concluido' THEN 1 ELSE 0 END) as concluido,
-                SUM(CASE WHEN status = 'evadido' THEN 1 ELSE 0 END) as evadido
-            FROM alunos 
-            GROUP BY turma
-            ORDER BY 
-                CASE WHEN turma IS NULL THEN 1 ELSE 0 END,
-                turma
-            LIMIT %s OFFSET %s
-        """
-        cursor.execute(sql, (per_page, offset))
+        sql = sql_base + " LIMIT %s OFFSET %s"
+        params.extend([per_page, offset])
+        
+        cursor.execute(sql, tuple(params))
         turmas_raw = cursor.fetchall()
         
         turmas_dict = {}
@@ -619,9 +638,6 @@ def get_relatorios_data():
             "has_next": page < total_pages
         }
     })
-
-
-
 
 if __name__ == '__main__':
     app.run(debug=True)

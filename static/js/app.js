@@ -53,7 +53,7 @@ if (document.getElementById('studentsTable')) {
     function initPagination() {
         paginationManager = new PaginationManager({
             containerId: 'alunosPagination',
-            perPage: 15,
+            perPage: 10,
             onPageChange: (page, search) => {
                 renderStudents(page, search);
             },
@@ -66,7 +66,7 @@ if (document.getElementById('studentsTable')) {
     // Buscar alunos da API com paginação
     async function fetchStudents(page = 1, search = '') {
         try {
-            let url = `/api/alunos?page=${page}&per_page=15`;
+            let url = `/api/alunos?page=${page}&per_page=10`;
             if (search) {
                 url += `&search=${encodeURIComponent(search)}`;
             }

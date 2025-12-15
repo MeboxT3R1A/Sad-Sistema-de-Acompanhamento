@@ -14,7 +14,7 @@ if (document.getElementById('docsTable')) {
     function initPagination() {
         paginationManager = new PaginationManager({
             containerId: 'documentosPagination',
-            perPage: 15,
+            perPage: 10,
             onPageChange: (page, search) => {
                 renderDocs(page, search);
             },
@@ -26,7 +26,7 @@ if (document.getElementById('docsTable')) {
 
     async function fetchDocs(page = 1, search = '') {
         try {
-            let url = `/api/documentos?page=${page}&per_page=15`;
+            let url = `/api/documentos?page=${page}&per_page=10`;
             if (search) {
                 url += `&search=${encodeURIComponent(search)}`;
             }
