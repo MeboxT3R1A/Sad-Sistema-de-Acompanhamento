@@ -1,7 +1,84 @@
 from flask import Flask, render_template, jsonify, request
 from Bd import * 
-import json
 app = Flask(__name__)
+import math
+
+# ========== FUNÇÃO DE PAGINAÇÃO CENTRALIZADA ==========
+def paginate_query(base_query, count_query, params=None, page=1, per_page=15, search=None, search_fields=None):
+    """
+    Função centralizada para paginação de qualquer query
+    
+    Args:
+        base_query: Query SQL principal (sem LIMIT/OFFSET)
+        count_query: Query para contar total
+        params: Parâmetros da query
+        page: Número da página
+        per_page: Itens por página
+        search: Termo de busca
+        search_fields: Lista de campos para busca
+    
+    Returns:
+        dict com dados paginados
+    """
+    try:
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Parâmetros iniciais
+        final_params = list(params) if params else []
+        where_clauses = []
+        
+        # Adicionar filtro de busca se existir
+        if search and search_fields:
+            search_conditions = []
+            search_param = f"%{search}%"
+            
+            for field in search_fields:
+                search_conditions.append(f"LOWER({field}) LIKE %s")
+                final_params.append(search_param)
+            
+            if search_conditions:
+                where_clauses.append("(" + " OR ".join(search_conditions) + ")")
+        
+        # Adicionar WHERE às queries
+        if where_clauses:
+            where_sql = " WHERE " + " AND ".join(where_clauses)
+            base_query += where_sql
+            count_query += where_sql
+        
+        # Calcular offset
+        offset = (page - 1) * per_page
+        
+        # 1. Contar total
+        cursor.execute(count_query, tuple(final_params))
+        total_result = cursor.fetchone()
+        total_items = total_result['total'] if total_result else 0
+        total_pages = math.ceil(total_items / per_page) if per_page > 0 else 1
+        
+        # 2. Buscar dados paginados
+        paginated_query = f"{base_query} LIMIT %s OFFSET %s"
+        final_params.extend([per_page, offset])
+        
+        cursor.execute(paginated_query, tuple(final_params))
+        items = cursor.fetchall()
+        
+        conn.close()
+        
+        return {
+            'items': items,
+            'pagination': {
+                'page': page,
+                'per_page': per_page,
+                'total': total_items,
+                'total_pages': total_pages,
+                'has_prev': page > 1,
+                'has_next': page < total_pages
+            }
+        }
+        
+    except Exception as e:
+        print(f"Erro na paginação: {e}")
+        return {'items': [], 'pagination': {}}
 
 # --- ROTAS DE PÁGINAS (HTML) ---
 
@@ -24,15 +101,30 @@ def relatorios():
 
 # --- ROTAS DA API (DADOS JSON) ---
 
-# Rota GET para buscar todos os alunos
+# Rota GET para buscar alunos COM PAGINAÇÃO
 @app.route("/api/alunos")
 def get_alunos():
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM alunos")
-    alunos = cursor.fetchall()
-    conn.close()
-    return jsonify(alunos)
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 15, type=int)
+    search = request.args.get('search', '').lower()
+    
+    base_query = "SELECT * FROM alunos"
+    count_query = "SELECT COUNT(*) as total FROM alunos"
+    search_fields = ['nome', 'cpf', 'curso', 'turma', 'identidade']
+    
+    result = paginate_query(
+        base_query=base_query,
+        count_query=count_query,
+        page=page,
+        per_page=per_page,
+        search=search,
+        search_fields=search_fields
+    )
+    
+    return jsonify({
+        'alunos': result['items'],
+        'pagination': result['pagination']
+    })
 
 # Rota GET para buscar aluno específico por ID
 @app.route("/api/alunos/<int:aluno_id>", methods=['GET'])
@@ -202,15 +294,11 @@ def excluir_aluno(aluno_id):
         return jsonify({"erro": str(e)}), 400
 
 # Rota GET para documentos com busca aprimorada
-@app.route("/api/documentos", methods=['GET'])
+@app.route("/api/documentos")
 def listar_documentos():
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    
-    # Parâmetros de busca
-    busca = request.args.get('busca', '').lower()
-    curso = request.args.get('curso', '')
-    turma = request.args.get('turma', '')
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 15, type=int)
+    search = request.args.get('search', '').lower()
     
     sql = """
         SELECT 
@@ -230,32 +318,23 @@ def listar_documentos():
             d.diploma_entregue
         FROM alunos a
         LEFT JOIN documentos_aluno d ON a.id = d.aluno_id
-        WHERE 1=1
     """
     
-    params = []
+    count_sql = "SELECT COUNT(*) as total FROM alunos a LEFT JOIN documentos_aluno d ON a.id = d.aluno_id"
+    search_fields = ['a.nome', 'a.cpf', 'a.identidade', 'a.curso', 'a.turma']
     
-    if busca:
-        sql += " AND (LOWER(a.nome) LIKE %s OR a.cpf LIKE %s OR a.identidade LIKE %s OR LOWER(a.curso) LIKE %s OR LOWER(a.turma) LIKE %s)"
-        busca_param = f"%{busca}%"
-        params.extend([busca_param, busca_param, busca_param, busca_param, busca_param])
+    result = paginate_query(
+        base_query=sql,
+        count_query=count_sql,
+        page=page,
+        per_page=per_page,
+        search=search,
+        search_fields=search_fields
+    )
     
-    if curso:
-        sql += " AND LOWER(a.curso) = %s"
-        params.append(curso.lower())
-    
-    if turma:
-        sql += " AND LOWER(a.turma) = %s"
-        params.append(turma.lower())
-    
-    sql += " ORDER BY a.nome"
-    
-    cursor.execute(sql, tuple(params))
-    dados = cursor.fetchall()
-    conn.close()
-    
+    # Formatar dados
     lista_formatada = []
-    for aluno in dados:
+    for aluno in result['items']:
         lista_formatada.append({
             "id": aluno["id"],
             "nome": aluno["nome"],
@@ -267,13 +346,16 @@ def listar_documentos():
             "cpf_entregue": bool(aluno.get("cpf_entregue")),
             "foto_entregue": bool(aluno.get("foto_entregue")),
             "historico_entregue": bool(aluno.get("historico_entregue")),
-            "endereco_entregue": bool(aluno.get("comprovante_entregue")), 
+            "endereco_entregue": bool(aluno.get("comprovante_entregue")),
             "certidao_entregue": bool(aluno.get("certidao_entregue")),
             "certificado_entregue": bool(aluno.get("certificado_entregue")),
             "diploma_entregue": bool(aluno.get("diploma_entregue"))
         })
-        
-    return jsonify(lista_formatada)
+    
+    return jsonify({
+        'documentos': lista_formatada,
+        'pagination': result['pagination']
+    })
 
 @app.route("/api/documentos/<int:aluno_id>", methods=['PUT'])
 def salvar_documentos(aluno_id):
@@ -377,7 +459,6 @@ def get_relatorios_data():
         "cursos": cursos_dict,
         "turmas": turmas_dict
     })
-
 
 if __name__ == '__main__':
     app.run(debug=True)

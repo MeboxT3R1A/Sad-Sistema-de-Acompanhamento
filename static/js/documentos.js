@@ -3,20 +3,32 @@ if (document.getElementById('docsTable')) {
     let allStudents = [];
     let currentStudent = null;
     const toast = new Toast();
+    let paginationManager = null;
 
-    document.addEventListener('DOMContentLoaded', () => {
-        renderDocs();
+    document.addEventListener('DOMContentLoaded', async () => {
+        initPagination();
+        await renderDocs();
         setupEventListeners();
     });
 
-    async function fetchDocs() {
+    function initPagination() {
+        paginationManager = new PaginationManager({
+            containerId: 'documentosPagination',
+            perPage: 15,
+            onPageChange: (page, search) => {
+                renderDocs(page, search);
+            },
+            onSearch: (search, page) => {
+                renderDocs(page, search);
+            }
+        });
+    }
+
+    async function fetchDocs(page = 1, search = '') {
         try {
-            const searchTerm = document.getElementById('searchInput').value;
-            let url = '/api/documentos';
-            
-            // Adicionar parâmetros de busca se houver
-            if (searchTerm) {
-                url += `?busca=${encodeURIComponent(searchTerm)}`;
+            let url = `/api/documentos?page=${page}&per_page=15`;
+            if (search) {
+                url += `&search=${encodeURIComponent(search)}`;
             }
             
             const response = await fetch(url);
@@ -28,36 +40,43 @@ if (document.getElementById('docsTable')) {
         } catch (error) {
             console.error("Erro ao buscar documentos:", error);
             toast.show('Erro ao carregar documentos', 'error');
-            return [];
+            return { documentos: [], pagination: {} };
         }
     }
 
-    async function renderDocs() {
+    async function renderDocs(page = 1, search = '') {
         try {
-            allStudents = await fetchDocs();
+            const data = await fetchDocs(page, search);
+            allStudents = data.documentos || [];
+            const pagination = data.pagination || {};
+            
             const table = document.getElementById('docsTable');
 
             if (allStudents.length === 0) {
                 table.innerHTML = '<tr><td colspan="10" class="text-center text-muted">Nenhum aluno encontrado</td></tr>';
-                return;
+            } else {
+                table.innerHTML = allStudents.map(student => `
+                    <tr>
+                        <td><strong>${student.nome}</strong></td>
+                        <td>${student.turma || '-'}</td>
+                        <td class="text-center">${renderCheckmark(student.certidao_entregue)}</td>
+                        <td class="text-center">${renderCheckmark(student.rg_entregue)}</td>
+                        <td class="text-center">${renderCheckmark(student.cpf_entregue)}</td>
+                        <td class="text-center">${renderCheckmark(student.endereco_entregue)}</td>
+                        <td class="text-center">${renderCheckmark(student.foto_entregue)}</td>
+                        <td class="text-center">${renderCheckmark(student.historico_entregue)}</td>
+                        <td class="text-center">${renderCheckmark(student.diploma_entregue)}</td>
+                        <td class="text-right">
+                            <button class="btn btn-outline" onclick="editDocuments('${student.id}')">✎</button>
+                        </td>
+                    </tr>
+                `).join('');
             }
-
-            table.innerHTML = allStudents.map(student => `
-                <tr>
-                    <td><strong>${student.nome}</strong></td>
-                    <td>${student.turma || '-'}</td>
-                    <td class="text-center">${renderCheckmark(student.certidao_entregue)}</td>
-                    <td class="text-center">${renderCheckmark(student.rg_entregue)}</td>
-                    <td class="text-center">${renderCheckmark(student.cpf_entregue)}</td>
-                    <td class="text-center">${renderCheckmark(student.endereco_entregue)}</td>
-                    <td class="text-center">${renderCheckmark(student.foto_entregue)}</td>
-                    <td class="text-center">${renderCheckmark(student.historico_entregue)}</td>
-                    <td class="text-center">${renderCheckmark(student.diploma_entregue)}</td>
-                    <td class="text-right">
-                        <button class="btn btn-outline" onclick="editDocuments('${student.id}')">✎</button>
-                    </td>
-                </tr>
-            `).join('');
+            
+            // Atualizar paginação
+            if (paginationManager) {
+                paginationManager.update(pagination);
+            }
             
         } catch (error) {
             console.error("Erro ao renderizar documentos:", error);
@@ -67,27 +86,23 @@ if (document.getElementById('docsTable')) {
     }
 
     function renderCheckmark(value) {
-        // VOLTEI AO ESTILO ORIGINAL: ✓ verde quando tem, - cinza quando não tem
         return value 
             ? '<span class="checkmark">✓</span>' 
             : '<span class="checkmark empty">-</span>';
     }
 
     function setupEventListeners() {
-        // Buscar alunos na pesquisa
-        document.getElementById('searchInput').addEventListener('input', renderDocs);
-        
         // Fechar modal
-        document.getElementById('closeModalBtn').addEventListener('click', closeModal);
-        document.getElementById('cancelBtn').addEventListener('click', closeModal);
+        document.getElementById('closeModalBtn')?.addEventListener('click', closeModal);
+        document.getElementById('cancelBtn')?.addEventListener('click', closeModal);
         
         // Fechar modal ao clicar fora
-        document.getElementById('docModal').addEventListener('click', e => {
+        document.getElementById('docModal')?.addEventListener('click', e => {
             if (e.target.id === 'docModal') closeModal();
         });
         
         // Submit form
-        document.getElementById('docForm').addEventListener('submit', handleFormSubmit);
+        document.getElementById('docForm')?.addEventListener('submit', handleFormSubmit);
     }
 
     window.editDocuments = async function(id) {
@@ -140,11 +155,12 @@ if (document.getElementById('docsTable')) {
 
     async function loadStudentsForSelect() {
         try {
-            const response = await fetch('/api/alunos');
-            const students = await response.json();
+            const response = await fetch('/api/alunos?per_page=100'); // Limite maior para select
+            const data = await response.json();
+            const students = data.alunos || [];
             const select = document.getElementById('studentSelect');
             
-            if (students && students.length > 0) {
+            if (students.length > 0) {
                 let options = '<option value="">Selecione um aluno...</option>';
                 students.forEach(student => {
                     options += `<option value="${student.id}">${student.nome} - ${student.turma || ''}</option>`;
@@ -191,7 +207,7 @@ if (document.getElementById('docsTable')) {
             if (response.ok) {
                 toast.show('Documentos atualizados com sucesso!', 'success');
                 closeModal();
-                await renderDocs(); 
+                await renderDocs(paginationManager.currentPage, paginationManager.currentSearch);
             } else {
                 const error = await response.json().catch(() => ({}));
                 toast.show(error.erro || 'Erro ao salvar documentos', 'error');

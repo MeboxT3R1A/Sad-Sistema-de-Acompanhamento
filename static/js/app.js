@@ -16,28 +16,10 @@ const DEFAULT_FIELDS = {
 };
 
 function normalizeStudent(raw) {
-    // Garante que todos os campos que o frontend espera existam
     return {
         ...DEFAULT_FIELDS,
         ...raw
     };
-}
-
-// === 1. Função para buscar alunos da API ===
-async function getStudents() {
-    try {
-        const res = await fetch('/api/alunos');
-        if (!res.ok) {
-            console.error('Erro ao buscar alunos:', res.status, await res.text());
-            return [];
-        }
-        const data = await res.json();
-        // Normaliza cada registro para não quebrar o frontend
-        return Array.isArray(data) ? data.map(normalizeStudent) : [];
-    } catch (err) {
-        console.error('Fetch /api/alunos falhou:', err);
-        return [];
-    }
 }
 
 // ========== TOAST NOTIFICATIONS ========== 
@@ -55,20 +37,50 @@ class Toast {
     }
 }
 
-// ========== MAIN PAGE LOGIC ==========
+// ========== ALUNOS PAGE LOGIC ==========
 if (document.getElementById('studentsTable')) {
 
     const toast = new Toast();
     let currentStudent = null;
+    let paginationManager = null;
 
     document.addEventListener('DOMContentLoaded', async () => {
+        initPagination();
         await renderStudents();
+        setupEventListeners();
     });
 
-    // Buscar alunos da API
-    async function fetchStudents() {
-        const res = await fetch('/api/alunos');
-        return await res.json();
+    function initPagination() {
+        paginationManager = new PaginationManager({
+            containerId: 'alunosPagination',
+            perPage: 15,
+            onPageChange: (page, search) => {
+                renderStudents(page, search);
+            },
+            onSearch: (search, page) => {
+                renderStudents(page, search);
+            }
+        });
+    }
+
+    // Buscar alunos da API com paginação
+    async function fetchStudents(page = 1, search = '') {
+        try {
+            let url = `/api/alunos?page=${page}&per_page=15`;
+            if (search) {
+                url += `&search=${encodeURIComponent(search)}`;
+            }
+            
+            const res = await fetch(url);
+            if (!res.ok) {
+                throw new Error('Erro ao buscar alunos');
+            }
+            return await res.json();
+        } catch (err) {
+            console.error('Fetch /api/alunos falhou:', err);
+            toast.show('Erro ao carregar alunos', 'error');
+            return { alunos: [], pagination: {} };
+        }
     }
 
     // Buscar aluno específico
@@ -150,45 +162,42 @@ if (document.getElementById('studentsTable')) {
     }
 
     // Render tabela
-    async function renderStudents() {
+    async function renderStudents(page = 1, search = '') {
         try {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const students = await fetchStudents();
+            const data = await fetchStudents(page, search);
+            const students = data.alunos || [];
+            const pagination = data.pagination || {};
+            
             const table = document.getElementById('studentsTable');
             
-            const filtered = students.filter(s => {
-                if (!s) return false;
-                return (
-                    (s.nome && s.nome.toLowerCase().includes(searchTerm)) ||
-                    (s.cpf && s.cpf.includes(searchTerm)) ||
-                    (s.curso && s.curso.toLowerCase().includes(searchTerm)) ||
-                    (s.turma && s.turma.toLowerCase().includes(searchTerm)) ||
-                    (s.identidade && s.identidade.includes(searchTerm))
-                );
-            });
-
-            if (filtered.length === 0) {
+            // Renderizar alunos
+            if (students.length === 0) {
                 table.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Nenhum aluno encontrado</td></tr>';
-                return;
+            } else {
+                table.innerHTML = students.map(student => `
+                    <tr>
+                        <td><strong>${student.nome || ''}</strong></td>
+                        <td>${student.cpf || ''}</td>
+                        <td>${student.curso || ''}</td>
+                        <td>${student.turma || ''}</td>
+                        <td>
+                            <span class="badge ${getStatusBadgeClass(student.status)}">
+                                ${getStatusText(student.status)}
+                            </span>
+                        </td>
+                        <td class="text-right">
+                            <button class="btn btn-outline" onclick="editStudent('${student.id}')" style="margin-right: 8px;">✎</button>
+                            <button class="btn btn-danger" onclick="deleteStudent('${student.id}')">🗑</button>
+                        </td>
+                    </tr>
+                `).join('');
             }
-
-            table.innerHTML = filtered.map(student => `
-                <tr>
-                    <td><strong>${student.nome || ''}</strong></td>
-                    <td>${student.cpf || ''}</td>
-                    <td>${student.curso || ''}</td>
-                    <td>${student.turma || ''}</td>
-                    <td>
-                        <span class="badge ${getStatusBadgeClass(student.status)}">
-                            ${getStatusText(student.status)}
-                        </span>
-                    </td>
-                    <td class="text-right">
-                        <button class="btn btn-outline" onclick="editStudent('${student.id}')" style="margin-right: 8px;">✎</button>
-                        <button class="btn btn-danger" onclick="deleteStudent('${student.id}')">🗑</button>
-                    </td>
-                </tr>
-            `).join('');
+            
+            // Atualizar paginação
+            if (paginationManager) {
+                paginationManager.update(pagination);
+            }
+            
         } catch (err) {
             console.error('Erro ao renderizar alunos:', err);
             const table = document.getElementById('studentsTable');
@@ -214,17 +223,28 @@ if (document.getElementById('studentsTable')) {
         }
     }
 
-    document.getElementById('searchInput').addEventListener('input', renderStudents);
-
-    // Novo aluno
-    document.getElementById('newStudentBtn').addEventListener('click', () => {
-        currentStudent = null;
-        document.getElementById('modalTitle').textContent = 'Novo Aluno';
-        document.getElementById('studentForm').reset();
-        document.getElementById('anoIngresso').value = new Date().getFullYear();
-        document.getElementById('dataMatricula').valueAsDate = new Date();
-        document.getElementById('studentModal').classList.add('active');
-    });
+    // Configurar listeners
+    function setupEventListeners() {
+        // Novo aluno
+        document.getElementById('newStudentBtn').addEventListener('click', () => {
+            currentStudent = null;
+            document.getElementById('modalTitle').textContent = 'Novo Aluno';
+            document.getElementById('studentForm').reset();
+            document.getElementById('anoIngresso').value = new Date().getFullYear();
+            document.getElementById('dataMatricula').valueAsDate = new Date();
+            document.getElementById('studentModal').classList.add('active');
+        });
+        
+        // Fechar modal
+        document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+        document.getElementById('cancelBtn').addEventListener('click', closeModal);
+        document.getElementById('studentModal').addEventListener('click', e => {
+            if (e.target.id === 'studentModal') closeModal();
+        });
+        
+        // Submit form
+        document.getElementById('studentForm').addEventListener('submit', handleFormSubmit);
+    }
 
     // Editar aluno
     window.editStudent = async function (id) {
@@ -246,7 +266,7 @@ if (document.getElementById('studentsTable')) {
         if (confirm('Tem certeza que deseja excluir este aluno?')) {
             try {
                 await apiDeleteStudent(id);
-                await renderStudents();
+                await renderStudents(paginationManager.currentPage, paginationManager.currentSearch);
                 toast.show('Aluno excluído com sucesso!', 'success');
             } catch (err) {
                 console.error('Erro ao excluir aluno:', err);
@@ -259,16 +279,9 @@ if (document.getElementById('studentsTable')) {
         document.getElementById('studentModal').classList.remove('active');
         currentStudent = null;
     }
-    
-    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
-    document.getElementById('cancelBtn').addEventListener('click', closeModal);
-
-    document.getElementById('studentModal').addEventListener('click', e => {
-        if (e.target.id === 'studentModal') closeModal();
-    });
 
     // Submit form
-    document.getElementById('studentForm').addEventListener('submit', async e => {
+    async function handleFormSubmit(e) {
         e.preventDefault();
 
         // Coletar dados do formulário
@@ -306,11 +319,11 @@ if (document.getElementById('studentsTable')) {
             }
 
             closeModal();
-            await renderStudents();
+            await renderStudents(paginationManager.currentPage, paginationManager.currentSearch);
         } catch (err) {
             console.error('Erro ao salvar aluno:', err);
         }
-    });
+    }
 
     // Preencher form
     function populateForm(student) {
