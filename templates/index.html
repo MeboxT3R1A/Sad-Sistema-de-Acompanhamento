@@ -8,8 +8,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SENAC - Sistema de Controle Documental</title>
-    <link rel="stylesheet" href="static/css/styles.css">
-    <script src="static/js/app.js" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
   <div class="app">
@@ -83,8 +82,28 @@
                                 <input type="date" id="dataNascimento" required>
                             </div>
                             <div class="form-group">
-                                <label for="rg">RG *</label>
+                                <label for="nacionalidade">Nacionalidade</label>
+                                <input type="text" id="nacionalidade" placeholder="Nacionalidade">
+                            </div>
+                            <div class="form-group">
+                                <label for="naturalidade">Naturalidade</label>
+                                <input type="text" id="naturalidade" placeholder="Local de nascimento">
+                            </div>
+                            <div class="form-group">
+                                <label for="uf">UF</label>
+                                <input type="text" id="uf" placeholder="Sigla do estado" maxlength="2">
+                            </div>
+                            <div class="form-group">
+                                <label for="rg">Identidade (RG) *</label>
                                 <input type="text" id="rg" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="expedidor">Expedidor</label>
+                                <input type="text" id="expedidor" placeholder="Local da Expedição">
+                            </div>
+                            <div class="form-group">
+                                <label for="dataExpedicao">Data de Expedição *</label>
+                                <input type="date" id="dataExpedicao" required>
                             </div>
                             <div class="form-group">
                                 <label for="cpf">CPF *</label>
@@ -98,28 +117,12 @@
                         <legend>Dados dos Responsáveis</legend>
                         <div class="form-grid">
                             <div class="form-group">
-                                <label for="nomeMae">Nome da Mãe *</label>
+                                <label for="nomeMae">Nome da Mãe</label>
                                 <input type="text" id="nomeMae" required>
                             </div>
                             <div class="form-group">
                                 <label for="nomePai">Nome do Pai</label>
                                 <input type="text" id="nomePai">
-                            </div>
-                            <div class="form-group">
-                                <label for="rgMae">RG da Mãe</label>
-                                <input type="text" id="rgMae">
-                            </div>
-                            <div class="form-group">
-                                <label for="cpfMae">CPF da Mãe</label>
-                                <input type="text" id="cpfMae">
-                            </div>
-                            <div class="form-group">
-                                <label for="rgPai">RG do Pai</label>
-                                <input type="text" id="rgPai">
-                            </div>
-                            <div class="form-group">
-                                <label for="cpfPai">CPF do Pai</label>
-                                <input type="text" id="cpfPai">
                             </div>
                         </div>
                     </fieldset>
@@ -170,6 +173,10 @@
                                 <input type="number" id="anoIngresso" required>
                             </div>
                             <div class="form-group">
+                                <label for="dataMatricula">Data de Matrícula *</label>
+                                <input type="date" id="dataMatricula" required>
+                            </div>
+                            <div class="form-group">
                                 <label for="anoFormatura">Ano de Formatura</label>
                                 <input type="number" id="anoFormatura">
                             </div>
@@ -197,8 +204,6 @@
 
     <!-- Toast Notification -->
     <div class="toast" id="toast"></div>
-
-    <script src="app.js"></script>
 </body>
 </html>
 
