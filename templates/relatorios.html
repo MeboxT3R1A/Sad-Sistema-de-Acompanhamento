@@ -17,7 +17,6 @@
 <body>
 
    <div class="app">
-       <!-- ========== NAVBAR ========== -->
         <main class="main-content">
             <div class="container">
                 <div class="grid-2">
@@ -82,6 +81,20 @@
                                 </tbody>
                             </table>
                         </div>
+                        <!-- Paginação para Cursos -->
+                        <div class="pagination" id="cursosPagination" style="display: none;">
+                            <div class="pagination-controls">
+                                <button class="btn btn-outline" id="prevCursosBtn" disabled>
+                                    ← Anterior
+                                </button>
+                                <span class="pagination-current" id="cursosPageInfo">
+                                    Página 1 de 1
+                                </span>
+                                <button class="btn btn-outline" id="nextCursosBtn" disabled>
+                                    Próxima →
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -109,6 +122,20 @@
                                 </tbody>
                             </table>
                         </div>
+                        <!-- Paginação para Turmas -->
+                        <div class="pagination" id="turmasPagination" style="display: none;">
+                            <div class="pagination-controls">
+                                <button class="btn btn-outline" id="prevTurmasBtn" disabled>
+                                    ← Anterior
+                                </button>
+                                <span class="pagination-current" id="turmasPageInfo">
+                                    Página 1 de 1
+                                </span>
+                                <button class="btn btn-outline" id="nextTurmasBtn" disabled>
+                                    Próxima →
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -117,11 +144,8 @@
 
     <!-- Toast -->
     <div class="toast" id="toast"></div>
-
-    <script src="app.js"></script>
-    <script src="relatorios.js"></script>
 </body>
 </html>
 
 
-{% endblock %}  
+{% endblock %}
