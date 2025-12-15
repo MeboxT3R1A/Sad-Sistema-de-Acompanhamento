@@ -55,7 +55,6 @@ class Toast {
     }
 }
 
-// ========== MAIN PAGE LOGIC ========== 
 // ========== MAIN PAGE LOGIC ==========
 if (document.getElementById('studentsTable')) {
 
@@ -74,74 +73,127 @@ if (document.getElementById('studentsTable')) {
 
     // Buscar aluno específico
     async function fetchStudentById(id) {
-        const res = await fetch(`/api/alunos/${id}`);
-        return await res.json();
+        try {
+            const res = await fetch(`/api/alunos/${id}`);
+            if (!res.ok) {
+                throw new Error('Aluno não encontrado');
+            }
+            return await res.json();
+        } catch (err) {
+            console.error('Erro ao buscar aluno:', err);
+            toast.show('Erro ao carregar dados do aluno', 'error');
+            return null;
+        }
     }
 
     // Criar aluno
     async function apiCreateStudent(student) {
-        const res = await fetch('/api/alunos', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(student)
-        });
-        if (!res.ok) {
-            const err = await res.json().catch(()=>({erro: 'erro desconhecido'}));
-            throw new Error(err.erro || 'Falha ao criar aluno');
+        try {
+            const res = await fetch('/api/alunos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(student)
+            });
+            
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ erro: 'Erro desconhecido' }));
+                throw new Error(err.erro || 'Falha ao criar aluno');
+            }
+            
+            return await res.json();
+        } catch (err) {
+            console.error('Erro ao criar aluno:', err);
+            toast.show(err.message || 'Erro ao criar aluno', 'error');
+            throw err;
         }
-        return await res.json(); // retorna o objeto criado com id e status
     }
-
-
 
     // Atualizar aluno
     async function apiUpdateStudent(id, student) {
-        await fetch(`/api/alunos/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(student)
-        });
+        try {
+            const res = await fetch(`/api/alunos/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(student)
+            });
+            
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ erro: 'Erro desconhecido' }));
+                throw new Error(err.erro || 'Falha ao atualizar aluno');
+            }
+            
+            return await res.json();
+        } catch (err) {
+            console.error('Erro ao atualizar aluno:', err);
+            toast.show(err.message || 'Erro ao atualizar aluno', 'error');
+            throw err;
+        }
     }
 
     // Excluir aluno
     async function apiDeleteStudent(id) {
-        await fetch(`/api/alunos/${id}`, { method: 'DELETE' });
+        try {
+            const res = await fetch(`/api/alunos/${id}`, { 
+                method: 'DELETE' 
+            });
+            
+            if (!res.ok) {
+                throw new Error('Falha ao excluir aluno');
+            }
+            
+            return await res.json();
+        } catch (err) {
+            console.error('Erro ao excluir aluno:', err);
+            toast.show('Erro ao excluir aluno', 'error');
+            throw err;
+        }
     }
 
     // Render tabela
     async function renderStudents() {
-        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-        const students = await fetchStudents();
-        const table = document.getElementById('studentsTable');
-        console.log("STUDENTS RAW:", students);
-        const filtered = students.filter(s =>
-            s.nome?.toLowerCase().includes(searchTerm) ||
-            s.cpf?.includes(searchTerm) ||
-            s.curso?.toLowerCase().includes(searchTerm)
-        );
+        try {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const students = await fetchStudents();
+            const table = document.getElementById('studentsTable');
+            
+            const filtered = students.filter(s => {
+                if (!s) return false;
+                return (
+                    (s.nome && s.nome.toLowerCase().includes(searchTerm)) ||
+                    (s.cpf && s.cpf.includes(searchTerm)) ||
+                    (s.curso && s.curso.toLowerCase().includes(searchTerm)) ||
+                    (s.turma && s.turma.toLowerCase().includes(searchTerm)) ||
+                    (s.identidade && s.identidade.includes(searchTerm))
+                );
+            });
 
-        if (filtered.length === 0) {
-            table.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Nenhum aluno encontrado</td></tr>';
-            return;
+            if (filtered.length === 0) {
+                table.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Nenhum aluno encontrado</td></tr>';
+                return;
+            }
+
+            table.innerHTML = filtered.map(student => `
+                <tr>
+                    <td><strong>${student.nome || ''}</strong></td>
+                    <td>${student.cpf || ''}</td>
+                    <td>${student.curso || ''}</td>
+                    <td>${student.turma || ''}</td>
+                    <td>
+                        <span class="badge ${getStatusBadgeClass(student.status)}">
+                            ${getStatusText(student.status)}
+                        </span>
+                    </td>
+                    <td class="text-right">
+                        <button class="btn btn-outline" onclick="editStudent('${student.id}')" style="margin-right: 8px;">✎</button>
+                        <button class="btn btn-danger" onclick="deleteStudent('${student.id}')">🗑</button>
+                    </td>
+                </tr>
+            `).join('');
+        } catch (err) {
+            console.error('Erro ao renderizar alunos:', err);
+            const table = document.getElementById('studentsTable');
+            table.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Erro ao carregar alunos</td></tr>';
         }
-
-        table.innerHTML = filtered.map(student => `
-            <tr>
-                <td><strong>${student.nome}</strong></td>
-                <td>${student.cpf}</td>
-                <td>${student.curso}</td>
-                <td>${student.turma}</td>
-                <td>
-                    <span class="badge ${getStatusBadgeClass(student.status)}">
-                        ${getStatusText(student.status)}
-                    </span>
-                </td>
-                <td class="text-right">
-                    <button class="btn btn-outline" onclick="editStudent('${student.id}')" style="margin-right: 8px;">✎</button>
-                    <button class="btn btn-danger" onclick="deleteStudent('${student.id}')">🗑</button>
-                </td>
-            </tr>
-        `).join('');
     }
 
     function getStatusBadgeClass(status) {
@@ -170,30 +222,44 @@ if (document.getElementById('studentsTable')) {
         document.getElementById('modalTitle').textContent = 'Novo Aluno';
         document.getElementById('studentForm').reset();
         document.getElementById('anoIngresso').value = new Date().getFullYear();
+        document.getElementById('dataMatricula').valueAsDate = new Date();
         document.getElementById('studentModal').classList.add('active');
     });
 
     // Editar aluno
     window.editStudent = async function (id) {
-        currentStudent = await fetchStudentById(id);
-        document.getElementById('modalTitle').textContent = 'Editar Aluno';
-        populateForm(currentStudent);
-        document.getElementById('studentModal').classList.add('active');
+        try {
+            const student = await fetchStudentById(id);
+            if (!student) return;
+            
+            currentStudent = student;
+            document.getElementById('modalTitle').textContent = 'Editar Aluno';
+            populateForm(currentStudent);
+            document.getElementById('studentModal').classList.add('active');
+        } catch (err) {
+            console.error('Erro ao editar aluno:', err);
+        }
     };
 
     // Deletar aluno
     window.deleteStudent = async function (id) {
         if (confirm('Tem certeza que deseja excluir este aluno?')) {
-            await apiDeleteStudent(id);
-            await renderStudents();
-            toast.show('Aluno excluído com sucesso!', 'success');
+            try {
+                await apiDeleteStudent(id);
+                await renderStudents();
+                toast.show('Aluno excluído com sucesso!', 'success');
+            } catch (err) {
+                console.error('Erro ao excluir aluno:', err);
+            }
         }
     };
 
     // Fechar modal
     function closeModal() {
         document.getElementById('studentModal').classList.remove('active');
+        currentStudent = null;
     }
+    
     document.getElementById('closeModalBtn').addEventListener('click', closeModal);
     document.getElementById('cancelBtn').addEventListener('click', closeModal);
 
@@ -205,49 +271,69 @@ if (document.getElementById('studentsTable')) {
     document.getElementById('studentForm').addEventListener('submit', async e => {
         e.preventDefault();
 
-        const student = {
+        // Coletar dados do formulário
+        const studentData = {
             nome: document.getElementById('nome').value,
-            rg: document.getElementById('rg').value || '---',
+            rg: document.getElementById('rg').value,
             cpf: document.getElementById('cpf').value,
             dataNascimento: document.getElementById('dataNascimento').value,
-            nomePai: document.getElementById('nomePai').value || 'Não informado',
-            nomeMae: document.getElementById('nomeMae').value || 'Não informado',
+            nomePai: document.getElementById('nomePai').value,
+            nomeMae: document.getElementById('nomeMae').value,
             telefone: document.getElementById('telefone').value,
-            email: document.getElementById('email').value || 'sem-email@naoinformado.com',
+            email: document.getElementById('email').value,
+            nacionalidade: document.getElementById('nacionalidade').value,
+            naturalidade: document.getElementById('naturalidade').value,
+            uf: document.getElementById('uf').value,
+            expedidor: document.getElementById('expedidor').value,
+            dataExpedicao: document.getElementById('dataExpedicao').value,
+            endereco: document.getElementById('endereco').value,
             curso: document.getElementById('curso').value,
             turma: document.getElementById('turma').value,
             turno: document.getElementById('turno').value,
             anoIngresso: document.getElementById('anoIngresso').value,
-            anoFormatura: document.getElementById('anoFormatura').value || '',
+            anoFormatura: document.getElementById('anoFormatura').value,
+            dataMatricula: document.getElementById('dataMatricula').value,
             status: document.getElementById('status').value
         };
 
-        if (currentStudent) {
-            await apiUpdateStudent(currentStudent.id, student);
-        } else {
-            await apiCreateStudent(student);
-        }
+        try {
+            if (currentStudent) {
+                await apiUpdateStudent(currentStudent.id, studentData);
+                toast.show('Aluno atualizado com sucesso!', 'success');
+            } else {
+                await apiCreateStudent(studentData);
+                toast.show('Aluno criado com sucesso!', 'success');
+            }
 
-        closeModal();
-        await renderStudents();
-        toast.show('Aluno salvo com sucesso!', 'success');
+            closeModal();
+            await renderStudents();
+        } catch (err) {
+            console.error('Erro ao salvar aluno:', err);
+        }
     });
 
     // Preencher form
     function populateForm(student) {
-        document.getElementById('nome').value = student.nome;
-        document.getElementById('rg').value = student.rg;
-        document.getElementById('cpf').value = student.cpf;
-        document.getElementById('dataNascimento').value = student.data_nascimento || student.dataNascimento;
+        document.getElementById('nome').value = student.nome || '';
+        document.getElementById('rg').value = student.identidade || student.rg || '';
+        document.getElementById('cpf').value = student.cpf || '';
+        document.getElementById('dataNascimento').value = student.data_nascimento || student.dataNascimento || '';
         document.getElementById('nomePai').value = student.nomePai || '';
         document.getElementById('nomeMae').value = student.nomeMae || '';
-        document.getElementById('telefone').value = student.telefone;
-        document.getElementById('email').value = student.email;
-        document.getElementById('curso').value = student.curso;
-        document.getElementById('turma').value = student.turma;
-        document.getElementById('turno').value = student.turno;
-        document.getElementById('anoIngresso').value = student.anoIngresso;
-        document.getElementById('anoFormatura').value = student.anoFormatura;
-        document.getElementById('status').value = student.status;
+        document.getElementById('telefone').value = student.telefone || '';
+        document.getElementById('email').value = student.email || '';
+        document.getElementById('nacionalidade').value = student.nacionalidade || '';
+        document.getElementById('naturalidade').value = student.naturalidade || '';
+        document.getElementById('uf').value = student.uf || '';
+        document.getElementById('expedidor').value = student.expedidor || '';
+        document.getElementById('dataExpedicao').value = student.data_expedicao || student.dataExpedicao || '';
+        document.getElementById('endereco').value = student.endereco || '';
+        document.getElementById('curso').value = student.curso || '';
+        document.getElementById('turma').value = student.turma || '';
+        document.getElementById('turno').value = student.turno || '';
+        document.getElementById('anoIngresso').value = student.anoIngresso || '';
+        document.getElementById('anoFormatura').value = student.anoFormatura || '';
+        document.getElementById('dataMatricula').value = student.data_conclusao || student.dataMatricula || '';
+        document.getElementById('status').value = student.status || 'ativo';
     }
 }
