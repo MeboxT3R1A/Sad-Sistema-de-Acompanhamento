@@ -522,10 +522,11 @@ if (document.getElementById('totalStudents')) {
     
     function renderStats(resumo) {
         if (resumo) {
-            animateValue("totalStudents", 0, resumo.total || 0, 1000);
-            animateValue("activeStudents", 0, resumo.ativo || 0, 1000);
-            animateValue("completedStudents", 0, resumo.concluido || 0, 1000);
-            animateValue("dropoutStudents", 0, resumo.evadido || 0, 1000);
+            // MODIFICAÇÃO AQUI: Removida a animação, valores são exibidos diretamente
+            document.getElementById("totalStudents").textContent = resumo.total || 0;
+            document.getElementById("activeStudents").textContent = resumo.ativo || 0;
+            document.getElementById("completedStudents").textContent = resumo.concluido || 0;
+            document.getElementById("dropoutStudents").textContent = resumo.evadido || 0;
         }
     }
 
@@ -533,23 +534,8 @@ if (document.getElementById('totalStudents')) {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
 
-    function animateValue(id, start, end, duration) {
-        if (start === end) return;
-        const range = end - start;
-        let current = start;
-        const increment = end > start ? 1 : -1;
-        const stepTime = Math.abs(Math.floor(duration / range));
-        const obj = document.getElementById(id);
-        
-        const timer = setInterval(function() {
-            current += increment;
-            obj.textContent = current;
-            if (current == end) {
-                clearInterval(timer);
-            }
-        }, stepTime > 0 ? stepTime : 10);
-        if(stepTime <= 0) obj.textContent = end; 
-    }
+    // MODIFICAÇÃO AQUI: Função animateValue REMOVIDA completamente
+    // Não é mais necessária pois os valores são exibidos diretamente
 
     function showToast(message, type = 'success') {
         const toast = document.getElementById('toast');
