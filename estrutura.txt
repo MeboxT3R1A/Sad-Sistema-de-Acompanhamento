@@ -1,7 +1,27 @@
 front_sad_backup/
-├── Banco de dados diploma.sql
+├── .gitignore
+├── Bd.py
+├── Bd_diplomas (Inserts 2).sql
+├── Bd_diplomas (Inserts).sql
+├── Bd_diplomas.sql
 ├── app.py
+├── estrutura.txt
+├── extras/
+│   ├── apagados.txt
+│   ├── app.js
+│   ├── registro.js
+│   ├── relatorios.js
+│   └── templates/
+│       ├── base.html
+│       ├── documentos.html
+│       ├── header.html
+│       ├── index.html
+│       ├── package.json
+│       ├── registros.html
+│       └── relatorios.html
+├── gerar.py
 ├── public/
+├── requirements.txt
 ├── static/
 │   ├── css/
 │   │   └── styles.css
@@ -10,6 +30,7 @@ front_sad_backup/
 │   └── js/
 │       ├── app.js
 │       ├── documentos.js
+│       ├── pagination.js
 │       ├── registro.js
 │       ├── relatorios.js
 │       └── scripts.js

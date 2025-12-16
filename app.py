@@ -100,6 +100,88 @@ def relatorios():
 
 
 # --- ROTAS DA API (DADOS JSON) ---
+@app.route("/api/registros", methods=["GET"])
+def listar_registros():
+    try:
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT
+                d.id               AS diploma_id,
+                a.id               AS aluno_id,
+                a.nome             AS aluno,
+                a.data_matricula,
+                d.livro,
+                d.registro_numero  AS folha_registro,
+                d.data_registro,
+                d.numero_diploma,
+                d.via              AS numero_emissoes
+            FROM diplomas d
+            JOIN alunos a ON a.id = d.aluno_id
+            ORDER BY d.data_registro DESC
+        """)
+
+        return jsonify(cursor.fetchall()), 200
+
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
+
+@app.route("/api/registros", methods=["POST"])
+def salvar_registro():
+    data = request.get_json()
+
+    obrigatorios = [
+        "aluno_id",
+        "livro",
+        "registro_numero",
+        "data_registro",
+        "numero_diploma",
+        "via",
+        "data_emissao"
+    ]
+
+    faltando = [c for c in obrigatorios if not data.get(c)]
+    if faltando:
+        return jsonify({
+            "erro": "Campos obrigatórios faltando",
+            "campos": faltando
+        }), 400
+
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO diplomas (
+                aluno_id,
+                livro,
+                registro_numero,
+                data_registro,
+                numero_diploma,
+                via,
+                data_emissao,
+                situacao
+            ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+        """, (
+            data["aluno_id"],
+            data["livro"],
+            data["registro_numero"],
+            data["data_registro"],
+            data["numero_diploma"],
+            data["via"],                 # primeira | segunda | terceira
+            data["data_emissao"],
+            data.get("situacao", "pendente")
+        ))
+
+        conn.commit()
+
+        return jsonify({"mensagem": "Registro salvo com sucesso"}), 201
+
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
+
+
 
 # Rota GET para buscar alunos COM PAGINAÇÃO
 @app.route("/api/alunos")
@@ -152,7 +234,7 @@ def criar_aluno():
             INSERT INTO alunos 
             (cpf, nome, data_nascimento, nacionalidade, naturalidade, uf,
              identidade, expedidor, data_expedicao, telefone, email, 
-             curso, turma, data_conclusao, status)
+             curso, turma, data_matricula, status)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         
@@ -218,7 +300,7 @@ def atualizar_aluno(aluno_id):
                 email = %s,
                 curso = %s,
                 turma = %s,
-                data_conclusao = %s,
+                data_matricula = %s,
                 status = %s,
                 updated_at = NOW()
             WHERE id = %s
@@ -401,6 +483,8 @@ def salvar_documentos(aluno_id):
     conn.commit()
     conn.close()
     return jsonify({"mensagem": "Documentos salvos com sucesso!"})
+
+
 
 
 @app.route("/api/relatorios")

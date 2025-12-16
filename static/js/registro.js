@@ -1,99 +1,140 @@
 if (document.getElementById('registroTable')) {
-    const storage = new StudentStorage();
     const toast = new Toast();
+    let registros = [];
 
     document.addEventListener('DOMContentLoaded', () => {
-        renderRegistros();
-        populateStudentSelect();
+        carregarRegistros();
+        carregarAlunos();
     });
+
+    // ======================
+    // LISTAR REGISTROS
+    // ======================
+    async function carregarRegistros() {
+        try {
+            const res = await fetch('/api/registros');
+            registros = await res.json();
+            renderRegistros();
+        } catch (e) {
+            toast.show('Erro ao carregar registros', 'error');
+        }
+    }
 
     function renderRegistros() {
         const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-        const students = storage.getAll();
         const table = document.getElementById('registroTable');
 
-        const filtered = students.filter(s =>
-            s.nome.toLowerCase().includes(searchTerm)
+        const filtrados = registros.filter(r =>
+            r.aluno.toLowerCase().includes(searchTerm)
         );
 
-        if (filtered.length === 0) {
-            table.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Nenhum aluno encontrado</td></tr>';
+        if (filtrados.length === 0) {
+            table.innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center text-muted">
+                        Nenhum registro encontrado
+                    </td>
+                </tr>`;
             return;
         }
 
-        table.innerHTML = filtered.map(student => `
+        table.innerHTML = filtrados.map(r => `
             <tr>
-                <td><strong>${student.nome}</strong></td>
-                <td>${student.dataMatricula || '-'}</td>
-                <td>${student.livroRegistro || '-'}</td>
-                <td>${student.folhaRegistro || '-'}</td>
-                <td>${student.dataEmissaoDiploma || '-'}</td>
-                <td>${student.numeroRegistroDiploma || '-'}</td>
+                <td><strong>${r.aluno}</strong></td>
+                <td>${r.data_matricula || '-'}</td>
+                <td>${r.livro || '-'}</td>
+                <td>${r.folha_registro || '-'}</td>
+                <td>${r.data_registro || '-'}</td>
+                <td>${r.numero_diploma || '-'}</td>
+                <td>${r.numero_emissoes || '-'}</td>
                 <td class="text-right">
-                    <button class="btn btn-outline" onclick="editRegistro('${student.id}')">✎</button>
+                    <button class="btn btn-outline" onclick="editarRegistro(${r.diploma_id})">✎</button>
                 </td>
             </tr>
         `).join('');
     }
 
-    function populateStudentSelect() {
-        const students = storage.getAll();
-        const select = document.getElementById('studentSelect');
-        select.innerHTML = '<option value="">Selecione um aluno...</option>' +
-            students.map(s => `<option value="${s.id}">${s.nome}</option>`).join('');
+    document.getElementById('searchInput')
+        .addEventListener('input', renderRegistros);
+
+    // ======================
+    // SELECT DE ALUNOS
+    // ======================
+    async function carregarAlunos() {
+        const select = document.getElementById('studentSelectRegistro');
+        try {
+            const res = await fetch('/api/alunos');
+            const alunos = await res.json();
+
+            select.innerHTML =
+                '<option value="">Selecione um aluno...</option>' +
+                alunos.map(a =>
+                    `<option value="${a.id}">${a.nome}</option>`
+                ).join('');
+        } catch {
+            toast.show('Erro ao carregar alunos', 'error');
+        }
     }
 
-    document.getElementById('searchInput').addEventListener('input', renderRegistros);
-
+    // ======================
+    // MODAL
+    // ======================
     document.getElementById('newRegistroBtn').addEventListener('click', () => {
         document.getElementById('registroForm').reset();
-       // document.getElementById('anoIngresso').value = new Date().getFullYear();
         document.getElementById('registroModal').classList.add('active');
     });
 
-    window.editRegistro = function(id) {
-        const student = storage.getById(id);
-        document.getElementById('studentSelect').value = id;
-        document.getElementById('dataMatricula').value = student.dataMatricula || '';
-        document.getElementById('livroRegistro').value = student.livroRegistro || '';
-        document.getElementById('folhaRegistro').value = student.folhaRegistro || '';
-        document.getElementById('dataEmissaoDiploma').value = student.dataEmissaoDiploma || '';
-        document.getElementById('numeroRegistroDiploma').value = student.numeroRegistroDiploma || '';
-        document.getElementById('observacoes').value = student.observacoes || '';
+    window.editarRegistro = function (id) {
+        const r = registros.find(x => x.diploma_id === id);
+        if (!r) return;
+
+        document.getElementById('studentSelectRegistro').value = r.aluno_id;
+        document.getElementById('livroRegistro').value = r.livro || '';
+        document.getElementById('registroFolha').value = r.folha_registro || '';
+        document.getElementById('dataRegistroRegistro').value = r.data_registro || '';
+        document.getElementById('numeroRegistroDiploma').value = r.numero_diploma || '';
+        document.getElementById('numeroEmissaoDiploma').value = r.numero_emissoes || '';
+
         document.getElementById('registroModal').classList.add('active');
     };
 
-    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
-    document.getElementById('cancelBtn').addEventListener('click', closeModal);
-    document.getElementById('registroModal').addEventListener('click', e => {
-        if (e.target.id === 'registroModal') closeModal();
-    });
+    document.getElementById('closeModalBtn').onclick = fecharModal;
+    document.getElementById('cancelBtn').onclick = fecharModal;
 
-    function closeModal() {
+    function fecharModal() {
         document.getElementById('registroModal').classList.remove('active');
     }
 
-    document.getElementById('registroForm').addEventListener('submit', e => {
+    // ======================
+    // SALVAR REGISTRO
+    // ======================
+    document.getElementById('registroForm').addEventListener('submit', async e => {
         e.preventDefault();
 
-        const studentId = document.getElementById('studentSelect').value;
-        const student = storage.getById(studentId);
+        const payload = {
+            aluno_id: document.getElementById('studentSelectRegistro').value,
+            livro: document.getElementById('livroRegistro').value,
+            registro_numero: document.getElementById('registroFolha').value,
+            data_registro: document.getElementById('dataRegistroRegistro').value,
+            numero_diploma: document.getElementById('numeroRegistroDiploma').value,
+            via: document.getElementById('numeroEmissaoDiploma').value,
+            data_emissao: document.getElementById('dataRegistroRegistro').value
+        };
 
-        if (!student) {
-            toast.show('Selecione um aluno válido', 'error');
-            return;
+        try {
+            const res = await fetch('/api/registros', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) throw new Error();
+
+            toast.show('Registro salvo com sucesso', 'success');
+            fecharModal();
+            carregarRegistros();
+        } catch {
+            toast.show('Erro ao salvar registro', 'error');
         }
-
-        student.dataMatricula = document.getElementById('dataMatricula').value;
-        student.livroRegistro = document.getElementById('livroRegistro').value;
-        student.folhaRegistro = document.getElementById('folhaRegistro').value;
-        student.dataEmissaoDiploma = document.getElementById('dataEmissaoDiploma').value;
-        student.numeroRegistroDiploma = document.getElementById('numeroRegistroDiploma').value;
-        student.observacoes = document.getElementById('observacoes').value;
-
-        storage.save(student);
-        closeModal();
-        renderRegistros();
-        toast.show('Registro atualizado com sucesso!', 'success');
     });
 }
