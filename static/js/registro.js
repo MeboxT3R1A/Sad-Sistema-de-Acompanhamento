@@ -63,8 +63,9 @@ if (document.getElementById('registroTable')) {
     async function carregarAlunos() {
         const select = document.getElementById('studentSelectRegistro');
         try {
-            const res = await fetch('/api/alunos');
-            const alunos = await res.json();
+            const res = await fetch('/api/alunos?per_page=1000');
+            const data = await res.json();
+            const alunos = data.alunos || [];
 
             select.innerHTML =
                 '<option value="">Selecione um aluno...</option>' +
@@ -114,7 +115,7 @@ if (document.getElementById('registroTable')) {
         const payload = {
             aluno_id: document.getElementById('studentSelectRegistro').value,
             livro: document.getElementById('livroRegistro').value,
-            registro_numero: document.getElementById('registroFolha').value,
+            folha_registro: document.getElementById('registroFolha').value,
             data_registro: document.getElementById('dataRegistroRegistro').value,
             numero_diploma: document.getElementById('numeroRegistroDiploma').value,
             via: document.getElementById('numeroEmissaoDiploma').value,

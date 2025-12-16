@@ -5,10 +5,35 @@ front_sad_backup/
 ├── Bd_diplomas (Inserts).sql
 ├── Bd_diplomas.sql
 ├── app.py
+├── blueprints/
+│   ├── __init__.py
+│   ├── alunos/
+│   │   ├── __init__.py
+│   │   ├── routes.py
+│   │   └── services.py
+│   ├── documentos/
+│   │   ├── __init__.py
+│   │   ├── routes.py
+│   │   └── services.py
+│   ├── registros/
+│   │   ├── __init__.py
+│   │   ├── routes.py
+│   │   └── services.py
+│   ├── relatorios/
+│   │   ├── __init__.py
+│   │   ├── pagination_helpers.py
+│   │   ├── routes.py
+│   │   └── services.py
+│   ├── utils/
+│   │   └── pagination.py
+│   └── views/
+│       ├── __init__.py
+│       └── routes.py
 ├── estrutura.txt
 ├── extras/
 │   ├── apagados.txt
 │   ├── app.js
+│   ├── app.py
 │   ├── registro.js
 │   ├── relatorios.js
 │   └── templates/
