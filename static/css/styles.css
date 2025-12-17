@@ -754,3 +754,38 @@ body {
 .form-group {
     position: relative;
 }
+
+/* Paginação: centralizar controles e ajustar espaçamento */
+.pagination {
+    display: flex;
+    justify-content: center; /* centraliza horizontalmente */
+    align-items: center;
+    padding: var(--spacing-md) 0;
+}
+
+.pagination-controls {
+    display: inline-flex;
+    gap: var(--spacing-md);
+    align-items: center;
+    justify-content: center;
+}
+
+/* Ajustes para botões dentro da paginação */
+.pagination .btn {
+    display: inline-flex; /* garante comportamento inline e centralizável */
+    padding: 0.35rem 0.75rem;
+    font-size: 0.95rem;
+}
+
+@media (max-width: 480px) {
+    .pagination-controls {
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    .pagination .btn {
+        width: 100%;
+    }
+    .pagination {
+        padding: var(--spacing-sm) 0;
+    }
+}
