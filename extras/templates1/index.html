@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Controle de Documentos{% endblock %}
+
+{% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SENAC - Sistema de Controle Documental</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+  <div class="app">
+       <!-- ========== NAVBAR ========== -->
+
+    
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Cadastro de Alunos</h2>
+                        <button class="btn btn-primary" id="newStudentBtn">+ Novo Aluno</button>
+                    </div>
+                    <div class="card-content">
+                        <!-- Search Bar -->
+                        <div class="search-bar">
+                            <input 
+                                type="text" 
+                                id="searchInput" 
+                                placeholder="Buscar por nome, CPF ou curso..." 
+                                class="search-input"
+                            >
+                        </div>
+
+                        <!-- Students Table -->
+                        <div class="table-wrapper">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>CPF</th>
+                                        <th>Curso</th>
+                                        <th>Turma</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentsTable">
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted">Carregando alunos...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Student Form Modal -->
+    <div class="modal" id="studentModal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h2 id="modalTitle">Novo Aluno</h2>
+                <button class="btn-close" id="closeModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="studentForm">
+                    <!-- Dados Pessoais -->
+                    <fieldset class="form-section">
+                        <legend>Dados Pessoais</legend>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="nome">Nome Completo *</label>
+                                <input type="text" id="nome" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="dataNascimento">Data de Nascimento *</label>
+                                <input type="date" id="dataNascimento" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="nacionalidade">Nacionalidade</label>
+                                <input type="text" id="nacionalidade" placeholder="Nacionalidade">
+                            </div>
+                            <div class="form-group">
+                                <label for="naturalidade">Naturalidade</label>
+                                <input type="text" id="naturalidade" placeholder="Local de nascimento">
+                            </div>
+                            <div class="form-group">
+                                <label for="uf">UF</label>
+                                <input type="text" id="uf" placeholder="Sigla do estado" maxlength="2">
+                            </div>
+                            <div class="form-group">
+                                <label for="rg">Identidade (RG) *</label>
+                                <input type="text" id="rg" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="expedidor">Expedidor</label>
+                                <input type="text" id="expedidor" placeholder="Local da Expedição">
+                            </div>
+                            <div class="form-group">
+                                <label for="dataExpedicao">Data de Expedição *</label>
+                                <input type="date" id="dataExpedicao" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="cpf">CPF *</label>
+                                <input type="text" id="cpf" required>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Dados Responsáveis -->
+                    <fieldset class="form-section">
+                        <legend>Dados dos Responsáveis</legend>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="nomeMae">Nome da Mãe</label>
+                                <input type="text" id="nomeMae" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="nomePai">Nome do Pai</label>
+                                <input type="text" id="nomePai">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Contato -->
+                    <fieldset class="form-section">
+                        <legend>Contato</legend>
+                        <div class="form-grid">
+                            <div class="form-group full">
+                                <label for="endereco">Endereço Completo *</label>
+                                <input type="text" id="endereco" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="telefone">Telefone *</label>
+                                <input type="tel" id="telefone" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">E-mail</label>
+                                <input type="email" id="email">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Dados Acadêmicos -->
+                    <fieldset class="form-section">
+                        <legend>Dados Acadêmicos</legend>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="curso">Curso *</label>
+                                <input type="text" id="curso" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="turma">Turma *</label>
+                                <input type="text" id="turma" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="turno">Turno *</label>
+                                <select id="turno" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="manha">Manhã</option>
+                                    <option value="tarde">Tarde</option>
+                                    <option value="noite">Noite</option>
+                                    <option value="integral">Integral</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="anoIngresso">Ano de Ingresso *</label>
+                                <input type="number" id="anoIngresso" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="dataMatricula">Data de Matrícula *</label>
+                                <input type="date" id="dataMatricula" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="anoFormatura">Ano de Formatura</label>
+                                <input type="number" id="anoFormatura">
+                            </div>
+                            <div class="form-group">
+                                <label for="status">Status *</label>
+                                <select id="status" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="ativo">Ativo</option>
+                                    <option value="concluido">Concluído</option>
+                                    <option value="evadido">Evadido</option>
+                                </select>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Form Actions -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline" id="cancelBtn">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar Aluno</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+</body>
+</html>
+
+
+{% endblock %} 

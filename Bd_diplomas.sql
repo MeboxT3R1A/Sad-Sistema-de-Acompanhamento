@@ -18,6 +18,7 @@ CREATE TABLE alunos (
     curso VARCHAR(150) NOT NULL,
     turma VARCHAR(50),  
     data_conclusao DATE,
+    data_matricula DATE,
     -- NOVO CAMPO ADICIONADO: status do aluno
     status ENUM('ativo', 'concluido', 'evadido') DEFAULT 'ativo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -40,10 +41,10 @@ CREATE TABLE diplomas (
     id INT PRIMARY KEY AUTO_INCREMENT,
     aluno_id INT NOT NULL,
     livro VARCHAR(50),               -- Campo Editável - Manual
-    registro_numero VARCHAR(50),     -- Campo Editável - Manual
+    folha_registro VARCHAR(50),     -- Campo Editável - Manual
     data_registro DATE DEFAULT (CURDATE()),  -- Data Atual do Sistema
     numero_diploma VARCHAR(100) UNIQUE,
-    via ENUM('primeira', 'segunda', 'terceira') DEFAULT 'primeira',
+    via TINYINT NOT NULL DEFAULT 1,
     data_emissao DATE NOT NULL,
     data_saida DATE,
     situacao ENUM('emitido', 'pendente', 'entregue') DEFAULT 'pendente',
@@ -138,7 +139,7 @@ SELECT
     a.data_conclusao,
     a.status, -- INCLUÍDO O STATUS
     d.livro,
-    d.registro_numero,
+    d.folha_registro,
     d.data_registro,
     d.numero_diploma,
     d.via,
@@ -160,7 +161,7 @@ SELECT
             AND a.expedidor IS NOT NULL 
             AND a.data_expedicao IS NOT NULL 
             AND d.livro IS NOT NULL 
-            AND d.registro_numero IS NOT NULL 
+            AND d.folha_registro IS NOT NULL 
             AND d.data_registro IS NOT NULL 
             THEN 'COMPLETO'
         ELSE 'INCOMPLETO'
@@ -180,7 +181,7 @@ SELECT
         CASE WHEN a.expedidor IS NULL THEN 'Expedidor' END,
         CASE WHEN a.data_expedicao IS NULL THEN 'Data Expedição' END,
         CASE WHEN d.livro IS NULL THEN 'Livro' END,
-        CASE WHEN d.registro_numero IS NULL THEN 'Registro Nº' END,
+        CASE WHEN d.folha_registro IS NULL THEN 'Registro Nº' END,
         CASE WHEN d.data_registro IS NULL THEN 'Data Registro' END
     ) as campos_faltantes
 FROM alunos a

@@ -113,7 +113,7 @@ def listar_registros():
                 a.nome             AS aluno,
                 a.data_matricula,
                 d.livro,
-                d.registro_numero  AS folha_registro,
+                d.folha_registro  AS folha_registro,
                 d.data_registro,
                 d.numero_diploma,
                 d.via              AS numero_emissoes
@@ -134,7 +134,7 @@ def salvar_registro():
     obrigatorios = [
         "aluno_id",
         "livro",
-        "registro_numero",
+        "folha_registro",
         "data_registro",
         "numero_diploma",
         "via",
@@ -156,7 +156,7 @@ def salvar_registro():
             INSERT INTO diplomas (
                 aluno_id,
                 livro,
-                registro_numero,
+                folha_registro,
                 data_registro,
                 numero_diploma,
                 via,
@@ -166,7 +166,7 @@ def salvar_registro():
         """, (
             data["aluno_id"],
             data["livro"],
-            data["registro_numero"],
+            data["folha_registro"],
             data["data_registro"],
             data["numero_diploma"],
             data["via"],                 # primeira | segunda | terceira

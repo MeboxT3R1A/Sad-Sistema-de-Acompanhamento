@@ -1,6 +1,9 @@
 from Bd import get_connection
 
 
+from Bd import get_connection
+from datetime import datetime
+
 def listar_registros():
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
@@ -12,25 +15,44 @@ def listar_registros():
             a.nome             AS aluno,
             a.data_matricula,
             d.livro,
-            d.registro_numero  AS folha_registro,
+            d.folha_registro,
             d.data_registro,
             d.numero_diploma,
-            d.via              AS numero_emissoes
+            d.via,
+            d.data_emissao
         FROM diplomas d
         JOIN alunos a ON a.id = d.aluno_id
         ORDER BY d.data_registro DESC
     """)
 
-    dados = cursor.fetchall()
+    registros = cursor.fetchall()
     conn.close()
-    return dados
+
+    # Função para formatar datas no padrão brasileiro DD/MM/YYYY
+    def formatar_data(dt):
+        if not dt:
+            return None
+        if isinstance(dt, str):
+            try:
+                dt = datetime.strptime(dt, "%Y-%m-%d")
+            except ValueError:
+                return dt  # caso já venha em outro formato
+        return dt.strftime("%d/%m/%Y")
+
+    # Aplica formatação nas datas
+    for r in registros:
+        r["data_matricula"] = formatar_data(r.get("data_matricula"))
+        r["data_registro"] = formatar_data(r.get("data_registro"))
+        r["data_emissao"] = formatar_data(r.get("data_emissao"))
+
+    return registros
 
 
 def salvar_registro(data):
     obrigatorios = [
         "aluno_id",
         "livro",
-        "registro_numero",
+        "folha_registro",
         "data_registro",
         "numero_diploma",
         "via",
@@ -46,12 +68,14 @@ def salvar_registro(data):
 
     conn = get_connection()
     cursor = conn.cursor()
-
+    
+    via = data.get("via")
+    
     cursor.execute("""
         INSERT INTO diplomas (
             aluno_id,
             livro,
-            registro_numero,
+            folha_registro,
             data_registro,
             numero_diploma,
             via,
@@ -61,10 +85,10 @@ def salvar_registro(data):
     """, (
         data["aluno_id"],
         data["livro"],
-        data["registro_numero"],
+        data["folha_registro"],
         data["data_registro"],
         data["numero_diploma"],
-        data["via"],
+        via,
         data["data_emissao"],
         data.get("situacao", "pendente")
     ))

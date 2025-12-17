@@ -3,14 +3,6 @@
 {% block title %}Controle de Documentos{% endblock %}
 
 {% block content %}
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro e Acompanhamento - SENAC</title>
-    <link rel="stylesheet" href="static/css/styles.css">
-    <script src="{{ url_for('static', filename='js/registro.js') }}" defer></script>
-   </head>
-<body>
 <div class="app">
        <!-- ========== NAVBAR ========== -->
    
@@ -44,7 +36,7 @@
                                         <th>Livro Registro</th>
                                         <th>Folha Registro</th>
                                         <th>Data de Registro</th>
-                                        <th>Número Diploma</th>
+                                        <th>Número do Registro</th>
                                         <th>Número de Emissões</th>
                                         <th>Ações</th>
                                     </tr>
@@ -79,20 +71,20 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="studentRegistroSelect">Turma/Curso</label>
+                        <label for="studentRegistroSelect">Curso</label>
                         <select id="studentRegistroSelect" required>
-                            <option value="">Selecione uma turma...</option>
+                            <option value="">Selecione um curso...</option>
                         </select>
                     </div>
 
                     <div class="form-section">
                         <div class="form-group">
-                            <label>Livro:</label>
+                            <label for="livroRegistro">Livro:</label>
                             <input type="text" id="livroRegistro" class="form-control" placeholder="Livro">
                         </div>
 
                          <div class="form-group">
-                            <label>Folha Registro:</label>
+                            <label for="registroFolha">Folha Registro:</label>
                             <input type="text" id="registroFolha" class="form-control" placeholder="Folha de registro">
                         </div>
 
@@ -103,12 +95,12 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="dataRegistroRegistro">Número Registro *</label>
+                            <label for="numeroRegistroDiploma">Número Registro *</label>
                             <input type="text" id="numeroRegistroDiploma" required placeholder="Número Registro">
                         </div>
 
                          <div class="form-group">
-                            <label for="dataRegistroRegistro">Número de Emissões *</label>
+                            <label for="numeroEmissaoDiploma">Número de Emissões *</label>
                             <input type="number" id="numeroEmissaoDiploma" required placeholder="Números de Diplomas emitidos">
                         </div>
                     </div>
@@ -120,28 +112,28 @@
 
                     <div class="form-row">
                         <div class="form-group third">
-                            <label>Nacionalidade:</label>
+                            <label for="nacionalidadeRegistro">Nacionalidade:</label>
                             <input type="text" id="nacionalidadeRegistro" class="form-control" placeholder="Nacionalidade">
                         </div>
 
                         <div class="form-group third">
-                            <label>Naturalidade:</label>
+                            <label for="naturalidadeRegistro">Naturalidade:</label>
                             <input type="text" id="naturalidadeRegistro" class="form-control" placeholder="Local de nascimento">
                         </div>
 
                         <div class="form-group third">
-                            <label>UF:</label>
+                            <label for="ufRegistro">UF:</label>
                             <input type="text" id="ufRegistro" class="form-control" placeholder="Sigla do estado" maxlength="2">
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group third">
-                            <label>Identidade:</label>
+                            <label for="identidadeRegistro">Identidade:</label>
                             <input type="text" id="identidadeRegistro" class="form-control" placeholder="Identidade">
                         </div>
                         <div class="form-group third">
-                            <label>Expedidor:</label>
+                            <label for="expedidorRegistro">Expedidor:</label>
                             <input type="text" id="expedidorRegistro" class="form-control" placeholder="Local da Expedição">
                         </div>
                         <div class="form-group">
@@ -151,7 +143,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>CPF:</label>
+                        <label for="cpfRegistro">CPF:</label>
                         <input type="text" id="cpfRegistro" class="form-control" placeholder="CPF">
                     </div>
 
@@ -198,25 +190,25 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="studentImprimirSelect">Turma/Curso *</label>
+                        <label for="studentImprimirSelect">Curso *</label>
                         <select id="studentImprimirSelect" required>
-                            <option value="">Selecione uma turma...</option>
+                            <option value="">Selecione um curso...</option>
                         </select>
                     </div>
 
                     <!-- Campos ocultos que serão preenchidos automaticamente -->
                     <div style="display: none;">
-                        <input type="text" id="livro" class="form-control" placeholder="Livro">
-                        <input type="text" id="registro" class="form-control" placeholder="Nº de Registro">
-                        <input type="date" id="dataRegistro">
-                        <input type="date" id="dataNascimento">
-                        <input type="text" id="nacionalidade" class="form-control" placeholder="Nacionalidade">
-                        <input type="text" id="naturalidade" class="form-control" placeholder="Local de nascimento">
-                        <input type="text" id="uf" class="form-control" placeholder="Sigla do estado">
-                        <input type="text" id="identidade" class="form-control" placeholder="Identidade">
-                        <input type="text" id="expedidor" class="form-control" placeholder="Local da Expedição">
-                        <input type="date" id="dataEspedicao">
-                        <input type="text" id="cpf" class="form-control" placeholder="CPF">
+                        <input type="text" id="livroImprimir" class="form-control" placeholder="Livro">
+                        <input type="text" id="registroImprimir" class="form-control" placeholder="Nº de Registro">
+                        <input type="date" id="dataRegistroImprimir">
+                        <input type="date" id="dataNascimentoImprimir">
+                        <input type="text" id="nacionalidadeImprimir" class="form-control" placeholder="Nacionalidade">
+                        <input type="text" id="naturalidadeImprimir" class="form-control" placeholder="Local de nascimento">
+                        <input type="text" id="ufImprimir" class="form-control" placeholder="Sigla do estado">
+                        <input type="text" id="identidadeImprimir" class="form-control" placeholder="Identidade">
+                        <input type="text" id="expedidorImprimir" class="form-control" placeholder="Local da Expedição">
+                        <input type="date" id="dataEspedicaoImprimir">
+                        <input type="text" id="cpfImprimir" class="form-control" placeholder="CPF">
                     </div>
                 </form>
             </div>
@@ -244,7 +236,7 @@
 
     <!-- Toast -->
     <div class="toast" id="toast"></div>
+</div>
 
-</body>
-</html>
+<script src="{{ url_for('static', filename='js/registro.js') }}" defer></script>
 {% endblock %}

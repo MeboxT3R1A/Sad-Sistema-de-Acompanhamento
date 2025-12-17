@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Controle de Documentos{% endblock %}
+
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro e Acompanhamento - SENAC</title>
+    <link rel="stylesheet" href="static/css/styles.css">
+    <script src="{{ url_for('static', filename='js/registro.js') }}" defer></script>
+   </head>
+<body>
+<div class="app">
+       <!-- ========== NAVBAR ========== -->
+   
+        <main class="main-content">
+            <div class="container">
+                <div class="card">
+                    <div class="card-header">
+    <h2 class="card-title">Registro e Acompanhamento</h2>
+    <div class="action-buttons">
+        <button class="btn btn-primary imprimir-diploma-btn" id="newImprimirBtn">🖨️ Imprimir Diploma</button>
+        <button class="btn btn-primary" id="newRegistroBtn">+ Novo Registro</button>
+    </div>
+                        
+                    </div>
+                    <div class="card-content">
+                        <div class="search-bar">
+                            <input 
+                                type="text" 
+                                id="searchInput" 
+                                placeholder="Buscar por aluno..." 
+                                class="search-input"
+                            >
+                        </div>
+
+                        <div class="table-wrapper">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Aluno</th>
+                                        <th>Data Matrícula</th>
+                                        <th>Livro Registro</th>
+                                        <th>Folha Registro</th>
+                                        <th>Data de Registro</th>
+                                        <th>Número Diploma</th>
+                                        <th>Número de Emissões</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="registroTable">
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">Carregando registros...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Registro Modal -->
+    <div class="modal" id="registroModal">
+        <div class="modal-content modal-md">
+            <div class="modal-header">
+                <h2>Registro e Acompanhamento</h2>
+                <button class="btn-close" id="closeModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="registroForm">
+                    <div class="form-group">
+                        <label for="studentSelectRegistro">Aluno *</label>
+                        <select id="studentSelectRegistro" required>
+                            <option value="">Selecione um aluno...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="studentRegistroSelect">Turma/Curso</label>
+                        <select id="studentRegistroSelect" required>
+                            <option value="">Selecione uma turma...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label>Livro:</label>
+                            <input type="text" id="livroRegistro" class="form-control" placeholder="Livro">
+                        </div>
+
+                         <div class="form-group">
+                            <label>Folha Registro:</label>
+                            <input type="text" id="registroFolha" class="form-control" placeholder="Folha de registro">
+                        </div>
+
+
+                        <div class="form-group">
+                            <label for="dataRegistroRegistro">Data do Registro *</label>
+                            <input type="date" id="dataRegistroRegistro" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dataRegistroRegistro">Número Registro *</label>
+                            <input type="text" id="numeroRegistroDiploma" required placeholder="Número Registro">
+                        </div>
+
+                         <div class="form-group">
+                            <label for="dataRegistroRegistro">Número de Emissões *</label>
+                            <input type="number" id="numeroEmissaoDiploma" required placeholder="Números de Diplomas emitidos">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dataNascimentoRegistro">Data de Nascimento *</label>
+                        <input type="date" id="dataNascimentoRegistro" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group third">
+                            <label>Nacionalidade:</label>
+                            <input type="text" id="nacionalidadeRegistro" class="form-control" placeholder="Nacionalidade">
+                        </div>
+
+                        <div class="form-group third">
+                            <label>Naturalidade:</label>
+                            <input type="text" id="naturalidadeRegistro" class="form-control" placeholder="Local de nascimento">
+                        </div>
+
+                        <div class="form-group third">
+                            <label>UF:</label>
+                            <input type="text" id="ufRegistro" class="form-control" placeholder="Sigla do estado" maxlength="2">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group third">
+                            <label>Identidade:</label>
+                            <input type="text" id="identidadeRegistro" class="form-control" placeholder="Identidade">
+                        </div>
+                        <div class="form-group third">
+                            <label>Expedidor:</label>
+                            <input type="text" id="expedidorRegistro" class="form-control" placeholder="Local da Expedição">
+                        </div>
+                        <div class="form-group">
+                            <label for="dataEspedicaoRegistro">Data de Expedição *</label>
+                            <input type="date" id="dataEspedicaoRegistro" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>CPF:</label>
+                        <input type="text" id="cpfRegistro" class="form-control" placeholder="CPF">
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline" id="cancelBtn">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    
+
+    <!--Imprimir Modal-->
+     <div class="modal" id="ImprimirModal">
+        <div class="modal-content modal-md">
+        
+
+
+            <div class="modal-header">
+                <button class="btn-close" id="closeImprimirBtn">&times;</button>
+                <div class="tabs"> 
+    <div class="tab active" data-tab="individual">Individual</div>
+    </div>
+    
+</div>
+
+ <!-- CORPO DO FORMULÁRIO -->
+        <div class="modal-body">
+            <div id="tab-individual" class="tab-content active">
+                <form id="imprimirForm">
+                    <div class="form-group">
+                        <label for="searchAlunoImprimir">Aluno *</label>
+                        <input 
+                            type="text" 
+                            id="searchAlunoImprimir" 
+                            class="form-control" 
+                            placeholder="Digite o nome ou CPF do aluno..."
+                            autocomplete="off"
+                            required
+                        >
+                        <div id="listaAlunosImprimir" class="autocomplete-list"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="studentImprimirSelect">Turma/Curso *</label>
+                        <select id="studentImprimirSelect" required>
+                            <option value="">Selecione uma turma...</option>
+                        </select>
+                    </div>
+
+                    <!-- Campos ocultos que serão preenchidos automaticamente -->
+                    <div style="display: none;">
+                        <input type="text" id="livro" class="form-control" placeholder="Livro">
+                        <input type="text" id="registro" class="form-control" placeholder="Nº de Registro">
+                        <input type="date" id="dataRegistro">
+                        <input type="date" id="dataNascimento">
+                        <input type="text" id="nacionalidade" class="form-control" placeholder="Nacionalidade">
+                        <input type="text" id="naturalidade" class="form-control" placeholder="Local de nascimento">
+                        <input type="text" id="uf" class="form-control" placeholder="Sigla do estado">
+                        <input type="text" id="identidade" class="form-control" placeholder="Identidade">
+                        <input type="text" id="expedidor" class="form-control" placeholder="Local da Expedição">
+                        <input type="date" id="dataEspedicao">
+                        <input type="text" id="cpf" class="form-control" placeholder="CPF">
+                    </div>
+                </form>
+            </div>
+
+
+        <!-- FOOTER COM BOTÕES -->
+        <div class="modal-footer">
+            <button class="btn btn-outline" id="cancelImprimirBtn">Cancelar</button>
+            <button class="btn btn-primary" id="btnImprimir">Imprimir</button>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+            
+ 
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+</body>
+</html>
+{% endblock %}

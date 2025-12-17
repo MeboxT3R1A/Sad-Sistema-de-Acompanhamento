@@ -46,7 +46,7 @@ if (document.getElementById('registroTable')) {
                 <td>${r.folha_registro || '-'}</td>
                 <td>${r.data_registro || '-'}</td>
                 <td>${r.numero_diploma || '-'}</td>
-                <td>${r.numero_emissoes || '-'}</td>
+                <td>${r.via  || '-'}</td>
                 <td class="text-right">
                     <button class="btn btn-outline" onclick="editarRegistro(${r.diploma_id})">✎</button>
                 </td>
@@ -78,6 +78,58 @@ if (document.getElementById('registroTable')) {
     }
 
     // ======================
+    // AO SELECIONAR ALUNO → CARREGAR DADOS
+    // ======================
+    document
+        .getElementById('studentSelectRegistro')
+        .addEventListener('change', async function () {
+
+            const alunoId = this.value;
+            if (!alunoId) return;
+
+            try {
+                const res = await fetch(`/api/alunos/${alunoId}`);
+                if (!res.ok) throw new Error();
+
+                const aluno = await res.json();
+
+                // ===== DADOS BÁSICOS =====
+                document.getElementById('cpfRegistro').value = aluno.cpf ?? '';
+                document.getElementById('dataNascimentoRegistro').value = aluno.data_nascimento ?? '';
+                document.getElementById('dataEspedicaoRegistro').value = aluno.data_expedicao ?? '';
+                document.getElementById('nacionalidadeRegistro').value = aluno.nacionalidade ?? '';
+                document.getElementById('naturalidadeRegistro').value = aluno.naturalidade ?? '';
+                document.getElementById('ufRegistro').value = aluno.uf ?? '';
+                document.getElementById('identidadeRegistro').value = aluno.identidade ?? '';
+                document.getElementById('expedidorRegistro').value = aluno.expedidor ?? '';
+                document.getElementById('dataEspedicaoRegistro').value =
+                    aluno.data_expedicao
+                        ? aluno.data_expedicao.split('T')[0]
+                        : '';
+
+                // ===== TURMAS / CURSOS =====
+                const selectCurso = document.getElementById('studentRegistroSelect');
+
+                selectCurso.innerHTML = '<option value="">Selecione uma turma...</option>';
+
+                if (aluno.cursos && aluno.cursos.length > 0) {
+                    aluno.cursos.forEach((c, index) => {
+                        selectCurso.innerHTML += `
+                            <option value="${index}">
+                                ${c.curso} - ${c.turma}
+                            </option>
+                        `;
+                    });
+                }
+
+            } catch (e) {
+                toast.show('Erro ao carregar dados do aluno', 'error');
+            }
+        });
+
+
+
+    // ======================
     // MODAL
     // ======================
     document.getElementById('newRegistroBtn').addEventListener('click', () => {
@@ -91,10 +143,10 @@ if (document.getElementById('registroTable')) {
 
         document.getElementById('studentSelectRegistro').value = r.aluno_id;
         document.getElementById('livroRegistro').value = r.livro || '';
-        document.getElementById('registroFolha').value = r.folha_registro || '';
+        document.getElementById('registroFolha').value = r.folha_registro|| '';
         document.getElementById('dataRegistroRegistro').value = r.data_registro || '';
         document.getElementById('numeroRegistroDiploma').value = r.numero_diploma || '';
-        document.getElementById('numeroEmissaoDiploma').value = r.numero_emissoes || '';
+        document.getElementById('numeroEmissaoDiploma').value = r.via || '';
 
         document.getElementById('registroModal').classList.add('active');
     };
@@ -118,8 +170,8 @@ if (document.getElementById('registroTable')) {
             folha_registro: document.getElementById('registroFolha').value,
             data_registro: document.getElementById('dataRegistroRegistro').value,
             numero_diploma: document.getElementById('numeroRegistroDiploma').value,
-            via: document.getElementById('numeroEmissaoDiploma').value,
-            data_emissao: document.getElementById('dataRegistroRegistro').value
+            via: parseInt(document.getElementById('numeroEmissaoDiploma').value, 10),
+            data_emissao: document.getElementById('dataEspedicaoRegistro').value
         };
 
         try {

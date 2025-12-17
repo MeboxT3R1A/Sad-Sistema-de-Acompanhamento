@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Relatórios - SENAC{% endblock %}
+
+{% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatórios - SENAC</title>
+    <link rel="stylesheet" href="static/css/styles.css">
+    <script src="static/js/app.js" defer></script> 
+    <script src="static/js/relatorios.js" defer></script>
+    
+</head> 
+
+<body>
+
+   <div class="app">
+        <main class="main-content">
+            <div class="container">
+                <div class="grid-2">
+                    <!-- Total Alunos -->
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-blue">👥</div>
+                        <div class="stat-content">
+                            <p class="stat-label">Total de Alunos</p>
+                            <p class="stat-value" id="totalStudents">0</p>
+                        </div>
+                    </div>
+
+                    <!-- Alunos Ativos -->
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-green">✓</div>
+                        <div class="stat-content">
+                            <p class="stat-label">Alunos Ativos</p>
+                            <p class="stat-value" id="activeStudents">0</p>
+                        </div>
+                    </div>
+
+                    <!-- Alunos Concluídos -->
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-blue">🎓</div>
+                        <div class="stat-content">
+                            <p class="stat-label">Concluídos</p>
+                            <p class="stat-value" id="completedStudents">0</p>
+                        </div>
+                    </div>
+
+                    <!-- Alunos Evadidos -->
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-orange">✕</div>
+                        <div class="stat-content">
+                            <p class="stat-label">Evadidos</p>
+                            <p class="stat-value" id="dropoutStudents">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Relatório por Curso -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Alunos por Curso</h2>
+                    </div>
+                    <div class="card-content">
+                        <!-- Barra de pesquisa para cursos -->
+                        <div class="search-bar">
+                            <input 
+                                type="text" 
+                                id="searchCursos" 
+                                placeholder="Buscar por nome do curso..." 
+                                class="search-input"
+                            >
+                        </div>
+                        
+                        <div class="table-wrapper">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Curso</th>
+                                        <th>Total</th>
+                                        <th>Ativos</th>
+                                        <th>Concluídos</th>
+                                        <th>Evadidos</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="courseTable">
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">Carregando dados...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Paginação para Cursos -->
+                        <div class="pagination" id="cursosPagination" style="display: none;">
+                            <div class="pagination-controls">
+                                <button class="btn btn-outline" id="prevCursosBtn" disabled>
+                                    ← Anterior
+                                </button>
+                                <span class="pagination-current" id="cursosPageInfo">
+                                    Página 1 de 1
+                                </span>
+                                <button class="btn btn-outline" id="nextCursosBtn" disabled>
+                                    Próxima →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Relatório por Turma -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Alunos por Turma</h2>
+                    </div>
+                    <div class="card-content">
+                        <!-- Barra de pesquisa para turmas -->
+                        <div class="search-bar">
+                            <input 
+                                type="text" 
+                                id="searchTurmas" 
+                                placeholder="Buscar por código da turma..." 
+                                class="search-input"
+                            >
+                        </div>
+                        
+                        <div class="table-wrapper">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Turma</th>
+                                        <th>Total</th>
+                                        <th>Ativos</th>
+                                        <th>Concluídos</th>
+                                        <th>Evadidos</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="classTable">
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">Carregando dados...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Paginação para Turmas -->
+                        <div class="pagination" id="turmasPagination" style="display: none;">
+                            <div class="pagination-controls">
+                                <button class="btn btn-outline" id="prevTurmasBtn" disabled>
+                                    ← Anterior
+                                </button>
+                                <span class="pagination-current" id="turmasPageInfo">
+                                    Página 1 de 1
+                                </span>
+                                <button class="btn btn-outline" id="nextTurmasBtn" disabled>
+                                    Próxima →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+</body>
+</html>
+
+
+{% endblock %}
