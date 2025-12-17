@@ -6,7 +6,7 @@
   <title>Certificado Preview</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/preview_styles.css') }}">
 </head>
-<body>
+<body data-aluno-id="{{ aluno_id }}">
   <div class="certificate-container">
     <!-- Primeira linha -->
     <div class="row">
@@ -115,8 +115,20 @@
         <span>/</span>
         <span class="date-field">&nbsp;&nbsp;&nbsp;&nbsp;</span>
         <span style="margin-left: 20px;">Assinatura do Aluno (a)</span>
+        <span style="border-bottom: 1px solid black; width: 200px; margin-left: 10px; display: inline-block;"></span>
       </div>
     </div>
   </div>
+
+  <!-- Added download button with #0055a4 color -->
+  <button class="download-btn" onclick="baixarDocx({{ aluno_id }})">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+      <polyline points="7 10 12 15 17 10"></polyline>
+      <line x1="12" y1="15" x2="12" y2="3"></line>
+    </svg>
+    Baixar
+  </button>
+  <script src="{{ url_for('static', filename='js/preview_script.js') }}"></script>
 </body>
 </html>

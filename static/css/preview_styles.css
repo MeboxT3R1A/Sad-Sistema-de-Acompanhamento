@@ -1,107 +1,149 @@
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-    font-family: Arial, sans-serif;
-    padding: 20px;
-    background-color: #f5f5f5;
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  background-color: #f5f5f5;
 }
 
 .certificate-container {
-    max-width: 800px;
-    margin: 0 auto;
-    background-color: white;
-    border: 2px solid black;
-    padding: 20px;
-    min-height: 400px;
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: white;
+  border: 2px solid black;
+  padding: 20px;
+  min-height: 400px;
 }
 
 .row {
-    display: flex;
-    flex-wrap: wrap;
-    margin-bottom: 8px;
-    gap: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  gap: 10px;
 }
 
 .field {
-    flex: 1;
-    min-width: 150px;
-    font-size: 14px;
+  flex: 1;
+  min-width: 150px;
+  font-size: 14px;
 }
 
 .field-label {
-    font-weight: bold;
-    display: inline;
+  font-weight: bold;
+  display: inline;
 }
 
 .field-value {
-    display: inline;
+  display: inline;
 }
 
 .full-width {
-    flex-basis: 100%;
+  flex-basis: 100%;
 }
 
 .middle-section {
-    margin: 40px 0;
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-    flex-wrap: wrap;
+  margin: 40px 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
 .signature-block {
-    flex: 1;
-    min-width: 250px;
-    text-align: center;
-    font-size: 13px;
-    line-height: 1.5;
+  flex: 1;
+  min-width: 250px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .observations-section {
-    margin-top: 30px;
-    font-size: 14px;
+  margin-top: 30px;
+  font-size: 14px;
 }
 
 .observations-label {
-    font-weight: bold;
-    margin-bottom: 5px;
+  font-weight: bold;
+  margin-bottom: 5px;
 }
 
 .signature-line {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
 }
 
 .date-field {
-    display: inline-block;
-    width: 30px;
-    border-bottom: 1px solid black;
-    text-align: center;
+  display: inline-block;
+  width: 30px;
+  border-bottom: 1px solid black;
+  text-align: center;
+}
+
+/* Download button styles */
+.download-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px; /* Mudando posição do botão de left para right */
+  background-color: #0055a4;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0, 85, 164, 0.3);
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.download-btn:hover {
+  background-color: #004080;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 85, 164, 0.4);
+}
+
+.download-btn:active {
+  transform: translateY(0);
 }
 
 @media print {
-    body {
+  body {
     padding: 0;
     background-color: white;
-    }
+  }
+
+  .download-btn {
+    display: none;
+  }
 }
 
 @media (max-width: 768px) {
-    .certificate-container {
+  .certificate-container {
     padding: 15px;
-    }
+  }
 
-    .field {
+  .field {
     min-width: 100%;
-    }
+  }
 
-    .signature-block {
+  .signature-block {
     min-width: 100%;
-    }
+  }
+
+  .download-btn {
+    bottom: 20px;
+    right: 20px; /* Ajustando posição mobile também para direita */
+    padding: 10px 20px;
+    font-size: 14px;
+  }
 }

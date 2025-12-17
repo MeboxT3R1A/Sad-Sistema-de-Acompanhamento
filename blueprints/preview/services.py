@@ -1,14 +1,47 @@
-from Bd import get_connection  # ajuste se seu helper tiver outro nome
-from datetime import datetime
+from Bd import get_connection
+from datetime import date
+import os
+import tempfile
+from docxtpl import DocxTemplate
 
+BASE_DIR = os.path.dirname(__file__)
+TEMPLATE_PATH = os.path.join(
+    BASE_DIR,
+    "template_preview",
+    "MODELO_LIVRO_REGISTRO.docx"
+)
 
-def get_dados_preview_por_aluno(aluno_id: int):
+def gerar_docx_por_aluno(aluno_id: int):
+    dados = get_dados_registro_por_aluno(aluno_id)
+
+    if not dados:
+        return None
+
+    if not os.path.exists(TEMPLATE_PATH):
+        raise FileNotFoundError("Template DOCX não encontrado")
+
+    doc = DocxTemplate(TEMPLATE_PATH)
+    doc.render(dados)
+
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
+    doc.save(tmp.name)
+
+    return tmp.name
+
+def formatar_data(data):
+    if not data:
+        return ""
+    if isinstance(data, str):
+        return data
+    return data.strftime("%d/%m/%Y")
+
+def get_dados_registro_por_aluno(aluno_id: int):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    query = """
+    cursor.execute("""
         SELECT 
-            a.nome,
+            a.nome              AS aluno,
             a.cpf,
             a.data_nascimento,
             a.nacionalidade,
@@ -17,35 +50,31 @@ def get_dados_preview_por_aluno(aluno_id: int):
             a.identidade,
             a.expedidor,
             a.data_expedicao,
-            a.curso,
-            a.turma,
+            CONCAT(a.curso, ' - ', a.turma) AS turma,
             a.data_conclusao,
             d.livro,
-            d.folha_registro,
+            d.folha_registro    AS codigo_registro,
             d.data_registro
         FROM alunos a
         LEFT JOIN diplomas d ON d.aluno_id = a.id
         WHERE a.id = %s
         LIMIT 1
-    """
+    """, (aluno_id,))
 
-    cursor.execute(query, (aluno_id,))
     row = cursor.fetchone()
-
     cursor.close()
     conn.close()
 
     if not row:
         return None
 
-    # Normalização EXATA para o HTML
-    dados = {
+    return {
         "livro": row["livro"] or "",
-        "codigo_registro": row["folha_registro"] or "",
+        "codigo_registro": row["codigo_registro"] or "",
         "data_registro": formatar_data(row["data_registro"]),
-        "turma": f'{row["curso"]} - {row["turma"]}',
+        "turma": row["turma"] or "",
         "data_conclusao": formatar_data(row["data_conclusao"]),
-        "aluno": row["nome"],
+        "aluno": row["aluno"] or "",
         "data_nascimento": formatar_data(row["data_nascimento"]),
         "nacionalidade": row["nacionalidade"] or "",
         "naturalidade": row["naturalidade"] or "",
@@ -53,15 +82,5 @@ def get_dados_preview_por_aluno(aluno_id: int):
         "identidade": row["identidade"] or "",
         "expedidor": row["expedidor"] or "",
         "data_expedicao": formatar_data(row["data_expedicao"]),
-        "cpf": row["cpf"],
+        "cpf": row["cpf"] or "",
     }
-
-    return dados
-
-
-def formatar_data(data):
-    if not data:
-        return ""
-    if isinstance(data, str):
-        return data
-    return data.strftime("%d/%m/%Y")
