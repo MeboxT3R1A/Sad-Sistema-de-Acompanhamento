@@ -1,4 +1,4 @@
-from flask import jsonify, request, render_template
+from flask import jsonify, request, Response
 from . import registros_bp
 from . import services as registros_services
 
@@ -20,3 +20,15 @@ def salvar_registro():
         return jsonify(result[0]), result[1]
 
     return jsonify(result), 201
+
+@registros_bp.route('/preview/<int:registro_id>', methods=['GET'])
+def preview_registro(registro_id):
+    pdf_bytes = registros_services.gerar_preview_pdf(registro_id)
+
+    return Response(
+        pdf_bytes,
+        mimetype='application/pdf',
+        headers={
+            'Content-Disposition': 'inline; filename=registro_preview.pdf'
+        }
+    )

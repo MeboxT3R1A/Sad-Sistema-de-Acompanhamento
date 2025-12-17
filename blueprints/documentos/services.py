@@ -1,4 +1,7 @@
 from Bd import get_connection
+import os
+import tempfile
+from docxtpl import DocxTemplate
 
 
 def listar_documentos_paginado(paginate_query, page, per_page, search):
@@ -110,3 +113,45 @@ def salvar_documentos(aluno_id, data):
 
     conn.commit()
     conn.close()
+
+BASE_DIR = os.path.dirname(__file__)
+
+def gerar_docx_registro_teste():
+    template_path = os.path.join(
+        BASE_DIR,
+        "template_doc",
+        "MODELO_LIVRO_REGISTRO.docx"
+    )
+
+    if not os.path.exists(template_path):
+        raise FileNotFoundError("Modelo DOCX não encontrado")
+
+    doc = DocxTemplate(template_path)
+
+    dados = {
+        "livro": "03",
+        "codigo_registro": "1203 / TESTE",
+        "data_registro": "01/01/2025",
+
+        "turma": "TURMA TESTE",
+        "data_conclusao": "28/11/2024",
+        "aluno": "Aluno Teste",
+        "data_nascimento": "01/01/2000",
+
+        "nacionalidade": "Brasileira",
+        "naturalidade": "BRASÍLIA",
+        "uf": "DF",
+
+        "identidade": "0000000",
+        "expedidor": "SSP/DF",
+        "data_expedicao": "01/01/2015",
+
+        "cpf": "000.000.000-00",
+    }
+
+    doc.render(dados)
+
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".docx")
+    doc.save(tmp.name)
+
+    return tmp.name

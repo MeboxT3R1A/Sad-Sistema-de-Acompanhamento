@@ -1,6 +1,7 @@
 if (document.getElementById('registroTable')) {
     const toast = new Toast();
     let registros = [];
+    let alunoSelecionado = null;
 
     document.addEventListener('DOMContentLoaded', () => {
         carregarRegistros();
@@ -157,6 +158,89 @@ if (document.getElementById('registroTable')) {
     function fecharModal() {
         document.getElementById('registroModal').classList.remove('active');
     }
+
+    const imprimirBtn = document.getElementById('newImprimirBtn');
+    const imprimirModal = document.getElementById('ImprimirModal');
+    const closeImprimirBtn = document.getElementById('closeImprimirBtn');
+    const cancelImprimirBtn = document.getElementById('cancelImprimirBtn');
+
+    if (imprimirBtn) {
+        imprimirBtn.addEventListener('click', () => {
+            imprimirModal.classList.add('active');
+        });
+    }
+
+    function fecharImprimirModal() {
+        imprimirModal.classList.remove('active');
+    }
+
+    if (closeImprimirBtn) {
+        closeImprimirBtn.addEventListener('click', fecharImprimirModal);
+    }
+
+    if (cancelImprimirBtn) {
+        cancelImprimirBtn.addEventListener('click', fecharImprimirModal);
+    }
+
+    imprimirModal.addEventListener('click', e => {
+        if (e.target.id === 'ImprimirModal') {
+            fecharImprimirModal();
+        }
+    });
+
+    const searchInput = document.getElementById("searchAlunoImprimir");
+    const lista = document.getElementById("listaAlunosImprimir");
+
+    searchInput.addEventListener("input", async () => {
+        const termo = searchInput.value.trim();
+
+        if (termo.length < 2) {
+            lista.innerHTML = "";
+            return;
+        }
+
+        const res = await fetch(`/api/alunos?search=${encodeURIComponent(termo)}&per_page=5`);
+        const data = await res.json();
+
+        lista.innerHTML = "";
+
+        data.alunos.forEach(aluno => {
+            const div = document.createElement("div");
+            div.className = "autocomplete-item";
+            div.textContent = `${aluno.nome} — ${aluno.cpf}`;
+
+            div.addEventListener("click", () => selecionarAluno(aluno.id, aluno.nome));
+
+            lista.appendChild(div);
+        });
+    });
+
+    async function selecionarAluno(alunoId, nome) {
+        const res = await fetch(`/api/alunos/${alunoId}`);
+        const aluno = await res.json();
+
+        alunoSelecionado = aluno;
+
+        searchInput.value = nome;
+        lista.innerHTML = "";
+
+        preencherCursos(aluno);
+    }
+
+    function preencherCursos(aluno) {
+        const select = document.getElementById("studentImprimirSelect");
+        select.innerHTML = `<option value="">Selecione um curso...</option>`;
+
+        if (!aluno.cursos || aluno.cursos.length === 0) return;
+
+        aluno.cursos.forEach(c => {
+            const opt = document.createElement("option");
+            opt.value = c.curso;
+            opt.textContent = `${c.curso} — ${c.turma || ""}`;
+            select.appendChild(opt);
+        });
+    }
+
 
     // ======================
     // SALVAR REGISTRO

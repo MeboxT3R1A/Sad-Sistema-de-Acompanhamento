@@ -1,8 +1,7 @@
 front_sad_backup/
 ├── .gitignore
 ├── Bd.py
-├── Bd_diplomas (Inserts 2).sql
-├── Bd_diplomas (Inserts).sql
+├── Bd_diplomas (inserts 20 dados).sql
 ├── Bd_diplomas.sql
 ├── app.py
 ├── blueprints/
@@ -14,7 +13,9 @@ front_sad_backup/
 │   ├── documentos/
 │   │   ├── __init__.py
 │   │   ├── routes.py
-│   │   └── services.py
+│   │   ├── services.py
+│   │   └── template_doc/
+│   │       └── MODELO_LIVRO_DE_REGISTRO.docx
 │   ├── registros/
 │   │   ├── __init__.py
 │   │   ├── routes.py
@@ -30,22 +31,7 @@ front_sad_backup/
 │       ├── __init__.py
 │       └── routes.py
 ├── estrutura.txt
-├── extras/
-│   ├── apagados.txt
-│   ├── app.js
-│   ├── app.py
-│   ├── registro.js
-│   ├── relatorios.js
-│   └── templates/
-│       ├── base.html
-│       ├── documentos.html
-│       ├── header.html
-│       ├── index.html
-│       ├── package.json
-│       ├── registros.html
-│       └── relatorios.html
 ├── gerar.py
-├── public/
 ├── requirements.txt
 ├── static/
 │   ├── css/
@@ -59,13 +45,10 @@ front_sad_backup/
 │       ├── registro.js
 │       ├── relatorios.js
 │       └── scripts.js
-├── templates/
-│   ├── base.html
-│   ├── documentos.html
-│   ├── header.html
-│   ├── index.html
-│   ├── package.json
-│   ├── registros.html
-│   └── relatorios.html
-└── testes/
-    └── guardar.html
+└── templates/
+    ├── base.html
+    ├── documentos.html
+    ├── header.html
+    ├── index.html
+    ├── registros.html
+    └── relatorios.html

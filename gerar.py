@@ -1,7 +1,7 @@
 import os
 
 # Ignorar pastas/arquivos indesejados
-EXCLUDE = {"venv", ".venv", "__pycache__", ".git", ".DS_Store", ".vscode"}
+EXCLUDE = {"venv", ".venv", "__pycache__", ".git", ".DS_Store", ".vscode", "extras"}
 EXCLUDE_EXT = {".pyc", ".pyo", ".log"}
 
 # Define o que não deve aparecer

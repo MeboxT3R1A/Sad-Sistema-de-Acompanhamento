@@ -124,7 +124,6 @@ body {
     margin-left: auto; /* garante que os links fiquem à direita */
 }
 
-
 .logo-box { 
     /* Remove o fundo azul e o texto */
     background-color: transparent; /* sem cor de fundo */
@@ -211,6 +210,39 @@ body {
 }
 
 /* ========== BUTTONS ========== */
+.tabs {
+    display: flex;
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 15px;
+}
+
+.tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #555;
+}
+
+.tab.active {
+    color: #000;
+    border-bottom: 3px solid #007bff; /* Azul da aba ativa */
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.tabs {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+
 .btn {
     display: inline-flex;
     align-items: center;
@@ -235,6 +267,23 @@ body {
     background-color: var(--color-primary-dark);
     box-shadow: var(--shadow-md);
 }
+
+.btn-secondary {
+    background-color: var(--color-primary);
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: var(--color-primary-dark);
+    box-shadow: var(--shadow-md);
+}
+
+.header-buttons {
+    display: flex;
+    gap: 10px; /* espaço entre os botões */
+    align-items: center;
+}
+
 
 .btn-outline {
     border: 1px solid var(--color-border);
@@ -658,66 +707,50 @@ body {
         width: 100%;
         justify-content: center;
     }
-
-    
 }
 
-/* ========== PAGINATION STYLES ========== */
-.pagination {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: var(--spacing-lg);
-    padding: var(--spacing-md);
+/* ========== AUTOCOMPLETE LIST ========== */
+.autocomplete-list {
+    position: absolute;
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-md);
+    max-height: 180px;
+    overflow-y: auto;
+    z-index: 1000;
+    margin-top: 2px;
+    width: 100%;
+    font-size: var(--font-size-base);
 }
 
-.pagination-info {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-}
-
-.pagination-controls {
+.itemAluno {
+    padding: var(--spacing-sm) var(--spacing-md);
+    cursor: pointer;
+    border-bottom: 1px solid var(--color-border);
+    transition: background-color 0.15s ease, color 0.15s ease;
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+    line-height: 1.4;
+    min-height: 38px;
     display: flex;
     align-items: center;
-    gap: var(--spacing-lg);
 }
 
-.pagination-current {
-    font-weight: 500;
-    color: var(--color-text);
-    min-width: 120px;
-    text-align: center;
+.itemAluno:last-child {
+    border-bottom: none;
 }
 
-#prevPageBtn:disabled,
-#nextPageBtn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+.itemAluno:hover {
+    background-color: var(--color-primary);
+    color: white;
 }
 
-#prevPageBtn:disabled:hover,
-#nextPageBtn:disabled:hover {
-    background-color: transparent;
-    box-shadow: none;
+.itemAluno:active {
+    background-color: var(--color-primary-dark);
 }
 
-/* Responsive pagination */
-@media (max-width: 768px) {
-    .pagination {
-        flex-direction: column;
-        gap: var(--spacing-md);
-        align-items: stretch;
-    }
-    
-    .pagination-controls {
-        justify-content: space-between;
-    }
-    
-    .pagination-current {
-        min-width: auto;
-    }
+/* Posicionamento relativo para o container do input */
+.form-group {
+    position: relative;
 }
