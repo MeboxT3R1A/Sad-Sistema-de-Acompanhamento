@@ -13,9 +13,14 @@ front_sad_backup/
 │   ├── documentos/
 │   │   ├── __init__.py
 │   │   ├── routes.py
+│   │   └── services.py
+│   ├── preview/
+│   │   ├── __init__.py
+│   │   ├── routes.py
 │   │   ├── services.py
-│   │   └── template_doc/
-│   │       └── MODELO_LIVRO_DE_REGISTRO.docx
+│   │   └── template_preview/
+│   │       ├── MODELO_LIVRO_REGISTRO.docx
+│   │       └── preview_registro.html
 │   ├── registros/
 │   │   ├── __init__.py
 │   │   ├── routes.py

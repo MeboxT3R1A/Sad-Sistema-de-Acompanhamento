@@ -1,4 +1,4 @@
-from flask import jsonify, request, send_file
+from flask import jsonify, request
 from . import documentos_bp
 from . import services as documentos_services
 from ..utils.pagination import paginate_query
@@ -34,12 +34,3 @@ def salvar_documentos(aluno_id):
         return jsonify({"mensagem": "Documentos salvos com sucesso!"})
     except Exception as e:
         return jsonify({"erro": str(e)}), 400
-
-@documentos_bp.route("/teste-docx", methods=["GET"])
-def teste_docx():
-    caminho = documentos_services.gerar_docx_registro_teste()
-    return send_file(
-        caminho,
-        as_attachment=True,
-        download_name="registro_teste.docx"
-    )

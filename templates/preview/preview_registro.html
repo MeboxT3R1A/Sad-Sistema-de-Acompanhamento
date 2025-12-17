@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Certificado Preview</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/preview_styles.css') }}">
+</head>
+<body>
+  <div class="certificate-container">
+    <!-- Primeira linha -->
+    <div class="row">
+      <div class="field">
+        <span class="field-label">Livro:</span>
+        <span class="field-value">{{livro}}</span>
+      </div>
+      <div class="field">
+        <span class="field-label">Registronº</span>
+        <span class="field-value">{{codigo_registro}}</span>
+      </div>
+      <div class="field">
+        <span class="field-label">Data de Registro:</span>
+        <span class="field-value">{{data_registro}}</span>
+      </div>
+    </div>
+
+    <!-- Segunda linha -->
+    <div class="row">
+      <div class="field">
+        <span class="field-label">Turma/Curso:</span>
+        <span class="field-value">{{turma}}</span>
+      </div>
+      <div class="field">
+        <span class="field-label">Conclusão:</span>
+        <span class="field-value">{{data_conclusao}}</span>
+      </div>
+      <div class="field">
+        <span class="field-label">Aluno:</span>
+        <span class="field-value">{{aluno}}</span>
+      </div>
+    </div>
+
+    <!-- Terceira linha -->
+    <div class="row">
+      <div class="field full-width">
+        <span class="field-label">Data de Nascimento:</span>
+        <span class="field-value">{{data_nascimento}}</span>
+      </div>
+    </div>
+
+    <!-- Quarta linha -->
+    <div class="row">
+      <div class="field">
+        <span class="field-label">Nacionalidade:</span>
+        <span class="field-value">{{nacionalidade}}</span>
+      </div>
+      <div class="field">
+        <span class="field-label">Naturalidade:</span>
+        <span class="field-value">{{naturalidade}}</span>
+      </div>
+      <div class="field">
+        <span class="field-label">UF:</span>
+        <span class="field-value">{{uf}}</span>
+      </div>
+    </div>
+
+    <!-- Quinta linha -->
+    <div class="row">
+      <div class="field">
+        <span class="field-label">Identidade:</span>
+        <span class="field-value">{{identidade}}</span>
+      </div>
+      <div class="field">
+        <span class="field-label">Expedidor:</span>
+        <span class="field-value">{{expedidor}}</span>
+      </div>
+      <div class="field">
+        <span class="field-label">Data Expedição:</span>
+        <span class="field-value">{{data_expedicao}}</span>
+      </div>
+    </div>
+
+    <!-- Sexta linha -->
+    <div class="row">
+      <div class="field full-width">
+        <span class="field-label">CPF:</span>
+        <span class="field-value">{{cpf}}</span>
+      </div>
+    </div>
+
+    <!-- Seção do meio com assinaturas -->
+    <div class="middle-section">
+      <div class="signature-block">
+        <div>Bruna de Oliveira Macedo Pires</div>
+        <div>Secretaria Escolar Reg nº 2213</div>
+        <div>Colégio Integrado Polivalente</div>
+        <div>Brasília - DF</div>
+      </div>
+      <div class="signature-block">
+        <div>Alline Cesar Pereira da Silva Caldas</div>
+        <div>Diretora Escolar Reg nº 4687</div>
+        <div>Faculdade SENAC/DF</div>
+        <div>Brasília - DF</div>
+      </div>
+    </div>
+
+    <!-- Seção de observações -->
+    <div class="observations-section">
+      <div class="observations-label">Observações:</div>
+      <div class="signature-line">
+        <span>Recebi originais em</span>
+        <span class="date-field">&nbsp;</span>
+        <span>/</span>
+        <span class="date-field">&nbsp;</span>
+        <span>/</span>
+        <span class="date-field">&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span style="margin-left: 20px;">Assinatura do Aluno (a)</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

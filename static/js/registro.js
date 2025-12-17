@@ -274,4 +274,35 @@ if (document.getElementById('registroTable')) {
             toast.show('Erro ao salvar registro', 'error');
         }
     });
+
+    // ======================
+    // IMPRIMIR → ABRIR PREVIEW EM NOVA ABA
+    // ======================
+    const btnImprimir = document.getElementById("btnImprimir");
+
+    if (btnImprimir) {
+        btnImprimir.addEventListener("click", () => {
+            if (!alunoSelecionado) {
+                toast.show("Selecione um aluno", "error");
+                return;
+            }
+
+            const cursoSelect = document.getElementById("studentImprimirSelect");
+            const cursoSelecionado = cursoSelect.value;
+
+            if (!cursoSelecionado) {
+                toast.show("Selecione um curso", "error");
+                return;
+            }
+
+            // 👉 Aqui é a URL do preview
+            const url = `/preview/registro/${alunoSelecionado.id}`;
+
+
+            // 👉 Nova aba
+            window.open(url, "_blank");
+        });
+    }
+
 }
+
