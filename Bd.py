@@ -5,7 +5,7 @@ def get_connection():
         host="localhost",
         user="root",
         port=3306,
-        password="senac",
+        password="carmen",
         database="bd_diplomas"
     )
     return conn
